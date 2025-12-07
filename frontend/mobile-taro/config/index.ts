@@ -32,8 +32,7 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
       'process.env.TARO_APP_BASE_URL': JSON.stringify(process.env.TARO_APP_BASE_URL || ''),
     },
     copy: {
-      patterns: [
-      ],
+      patterns: [],
       options: {
       }
     },

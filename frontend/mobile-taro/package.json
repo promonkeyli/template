@@ -54,6 +54,7 @@
     "@tarojs/runtime": "4.1.8",
     "@tarojs/shared": "4.1.8",
     "@tarojs/taro": "4.1.8",
+    "ahooks": "^3.9.6",
     "axios": "^1.13.2",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",

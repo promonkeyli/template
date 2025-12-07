@@ -1,28 +1,48 @@
-import Taro from '@tarojs/taro'
-import { useState } from 'react'
+import {useEffect, useRef, useState} from 'react'
+import {useRequest} from "ahooks";
+import {fetchLogin} from "@/services/auth";
+import Taro from "@tarojs/taro";
+import useUserStore from "@/stores/user";
 
 export const useLogin = () => {
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [password, setPassword] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('15984093508')
+  const [password, setPassword] = useState('ly15984093508')
 
-  const handleGetPhoneNumber = (e) => {
-    if (e.detail.errMsg === 'getPhoneNumber:ok') {
-      // 用户同意授权
-      console.log('用户同意授权', e.detail)
-      // 在这里调用后端接口，发送 code 和 encryptedData, iv
-      // Taro.login({
-      //   success: (res) => {
-      //     if (res.code) {
-      //       // 发送 res.code 到后台换取 openId, sessionKey, unionId
-      //       // 再将 e.detail.encryptedData, e.detail.iv 发送给后端解密
-      //     }
-      //   }
-      // })
-    } else {
-      // 用户拒绝授权
-      console.log('用户拒绝授权')
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const { loading, run: loginRun } = useRequest(fetchLogin, {
+    manual: true,
+    onSuccess: (res) => {
+      // 存储 token 信息
+      useUserStore.getState().setTokenInfo(res.data)
+      // 跳转主页
+      Taro.showToast({
+        title: "登陆成功",
+        icon: "none",
+        duration: 2000,
+      })
+      timerRef.current = setTimeout(() => {
+        Taro.switchTab({
+          url: "/pages/home/index",
+        })
+      }, 1000)
+    },
+    onError: (err) => {
+      Taro.showToast({
+        title: err.message,
+        icon: 'error',
+      })
     }
-  }
+  });
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+    }
+  }, [])
 
   const handlePhoneNumberChange = (e) => {
     setPhoneNumber(e.detail.value)
@@ -33,17 +53,15 @@ export const useLogin = () => {
   }
 
   const handleLogin = () => {
-    console.log('Login attempt with:', { phoneNumber, password })
-    // Here you would typically call an API to authenticate the user
-    // For now, just logging the values
+    loginRun({ phone: phoneNumber, password })
   }
 
   return {
     phoneNumber,
     password,
+    loading,
     handlePhoneNumberChange,
     handlePasswordChange,
     handleLogin,
-    handleGetPhoneNumber,
   }
 }

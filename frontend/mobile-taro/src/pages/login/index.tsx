@@ -3,39 +3,40 @@ import { useLogin } from './useLogin'
 import logo from '@/assets/images/logo.jpg'
 
 const Login = () => {
+
   const {
     phoneNumber,
     password,
+    loading,
     handlePhoneNumberChange,
     handlePasswordChange,
     handleLogin,
-    handleGetPhoneNumber,
   } = useLogin()
 
   return (
-    <View className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <View className="mb-8">
+    <View className="flex flex-col items-center justify-center px-8 pt-20">
+      <View className="my-8">
         <Image src={logo} className="w-24 h-24 rounded-full" />
       </View>
 
-      <View className="w-full max-w-sm bg-white p-6 rounded-lg shadow-md">
-        <View className="text-2xl font-bold text-center mb-6">商城登录</View>
+      <View className="w-full bg-white px-5">
 
         <View className="mb-4">
           <Input
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full py-1 border border-gray-300 focus:outline-none focus:ring-2"
             type="number"
             placeholder="请输入手机号"
             value={phoneNumber}
             onInput={handlePhoneNumberChange}
-            maxLength={11}
+            maxlength={11}
           />
         </View>
 
-        <View className="mb-6">
+        <View className="mb-4">
           <Input
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="password"
+            type="safe-password"
+            password
+            className="w-full py-1 border border-gray-300 focus:outline-none focus:ring-2"
             placeholder="请输入密码"
             value={password}
             onInput={handlePasswordChange}
@@ -43,18 +44,11 @@ const Login = () => {
         </View>
 
         <Button
-          className="w-full bg-blue-500 text-white p-3 rounded-md text-lg hover:bg-blue-600 transition-colors duration-200"
+          className="w-full bg-primary text-white py-2 rounded-sm text-base"
+          disabled={loading}
           onClick={handleLogin}
         >
           登录
-        </Button>
-
-        <Button
-          openType="getPhoneNumber"
-          onGetPhoneNumber={handleGetPhoneNumber}
-          className="w-full bg-green-500 text-white p-3 rounded-md text-lg mt-4 hover:bg-green-600 transition-colors duration-200"
-        >
-          微信手机号一键登录
         </Button>
       </View>
     </View>

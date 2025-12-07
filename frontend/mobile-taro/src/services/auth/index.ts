@@ -7,7 +7,7 @@ import { ResponseData } from '@/utils/http/type';
  * @param params 登录参数
  * @returns 登录响应数据
  */
-export function login(params: LoginParams): Promise<ResponseData<LoginResponse>> {
+export function fetchLogin(params: LoginParams): Promise<ResponseData<LoginResponse>> {
     return http.post('/v1/auth/login/phone', params, { isSkipAuth: true });
 }
 

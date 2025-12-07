@@ -1,5 +1,17 @@
-@import "tailwindcss";
+@import "weapp-tailwindcss";
 
+/* 定义主题变量（颜色 / 间距 / 字体 / etc.） */
+@theme {
+  /* 颜色 系统 */
+  --color-primary: #9BAA6A;
+
+  /* 字体大小 / 字体系统（可选） */
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+
+
+}
 /* ========== 布局基础 ========== */
 page {
   width: 100%;

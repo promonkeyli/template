@@ -1,5 +1,3 @@
-import { TokenInfo } from '@/stores/user/type';
-
 /**
  * 登录请求参数
  */
@@ -12,6 +10,8 @@ export interface LoginParams {
  * 登录响应数据
  */
 export interface LoginResponse {
-    userInfo: any;
-    tokenInfo: TokenInfo;
+  access_token: string;
+  expires_at: number;
+  refresh_token: string;
+  uid: string;
 }
