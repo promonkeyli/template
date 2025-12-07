@@ -3,7 +3,7 @@ import Taro from '@tarojs/taro';
 import { login, logout } from '@/services/user';
 import useUserStore from '@/stores/user';
 
-export default function useIndex() {
+export default function useHomeStore() {
     const [username, setUsername] = useState('15984093508');
     const [password, setPassword] = useState('ly15984093508');
     const [loading, setLoading] = useState(false);
