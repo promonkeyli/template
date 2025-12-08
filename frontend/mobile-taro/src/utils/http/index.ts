@@ -1,9 +1,9 @@
 import Taro from '@tarojs/taro';
-import axios, { InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import taroAdapter from './adapter';
 import useUserStore from '@/stores/user';
 // import { TokenInfo } from '@/stores/user/type';
-import {ResponseData} from "@/utils/http/type";
+import type { ApiResponse, IAxiosRequestConfig, IInternalAxiosRequestConfig } from "@/utils/http/type"; // 导入类型扩展
 
 declare module 'axios' {
   export interface AxiosRequestConfig<D = any> {
@@ -28,10 +28,10 @@ const instance = axios.create({
 
 // 请求拦截器
 instance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  (config: IInternalAxiosRequestConfig) => {
     console.log('config', config);
     if (!config.isSkipAuth) {
-      const tokenInfo = useUserStore.getState().tokenInfo;
+      const tokenInfo = useUserStore.getState().tokenInfo as any;
       if (tokenInfo?.accessToken) {
         config.headers = config.headers || {};
         config.headers.Authorization = `Bearer ${tokenInfo.accessToken}`;
@@ -46,8 +46,8 @@ instance.interceptors.request.use(
 
 // 响应拦截器
 instance.interceptors.response.use(
-  (response) => {
-    const { code } = response.data as ResponseData;
+  (response: AxiosResponse) => {
+    const { code } = response.data as ApiResponse;
     console.log('【原始响应】', response);
 
     // http code 200 ， 业务 code 0 同时满足表示，是成功的响应，否则全是失败
@@ -147,4 +147,25 @@ instance.interceptors.response.use(
 //   return Promise.reject(new Error('Login expired'));
 // }
 
-export default instance;
+/**
+ * @description: 请求函数: 为了ts考虑, 提供更具体的类型
+ */
+const request = {
+	request: <T = any>(config: IAxiosRequestConfig): Promise<ApiResponse<T>> => {
+    return instance.request<ApiResponse<T>>(config) as any;
+	},
+	get: <T = any>(url: string, config?: IAxiosRequestConfig): Promise<ApiResponse<T>> => {
+		return instance.get<ApiResponse<T>>(url, config) as any;
+	},
+	post: <T = any>(url: string, data?: any, config?: IAxiosRequestConfig): Promise<ApiResponse<T>> => {
+		return instance.post<ApiResponse<T>>(url, data, config) as any;
+	},
+	put: <T = any>(url: string, data?: any, config?: IAxiosRequestConfig): Promise<ApiResponse<T>> => {
+		return instance.put<ApiResponse<T>>(url, data, config) as any;
+	},
+	delete: <T = any>(url: string, config?: IAxiosRequestConfig): Promise<ApiResponse<T>> => {
+		return instance.delete<ApiResponse<T>>(url, config) as any;
+	}
+}
+
+export default request;

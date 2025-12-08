@@ -14,7 +14,7 @@ export const useLogin = () => {
     manual: true,
     onSuccess: (res) => {
       // 存储 token 信息
-      useUserStore.getState().setTokenInfo(res.data)
+      useUserStore.getState().setTokenInfo(res.data as any)
       // 跳转主页
       Taro.showToast({
         title: "登陆成功",

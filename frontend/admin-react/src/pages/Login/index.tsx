@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Eye, EyeOff, Lock, User } from 'lucide-react'
+import { Eye, EyeOff, Lock, Smartphone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,8 +10,8 @@ import { useLogin } from './store'
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
-    username: 'admin',
-    password: '123456'
+    phone: '15984093508',
+    password: 'ly15984093508'
   })
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -54,22 +54,22 @@ export default function Login() {
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-xl text-center">登录</CardTitle>
             <CardDescription className="text-center">
-              输入您的用户名和密码以继续
+              输入您的手机号和密码以继续
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* 用户名输入 */}
+              {/* 手机号输入 */}
               <div className="flex flex-col gap-3">
-                <Label htmlFor="username">用户名</Label>
+                <Label htmlFor="phone">手机号</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
-                    id="username"
-                    name="username"
-                    type="text"
-                    placeholder="请输入用户名"
-                    value={formData.username}
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="请输入手机号"
+                    value={formData.phone}
                     onChange={handleInputChange}
                     className="pl-10 h-11"
                     required

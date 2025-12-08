@@ -16,10 +16,10 @@ export interface UserInfo {
 
 // Token 相关类型
 export interface TokenInfo {
-	accessToken: string; // 访问令牌
-	refreshToken: string; // 刷新令牌
-	expiresIn?: number; // 过期时间（秒）
-	tokenType?: string; // 令牌类型（如 Bearer）
+	access_token: string;
+	refresh_token: string;
+	expires_at: number;
+	uid: string;
 }
 
 // Store 状态类型
@@ -46,16 +46,16 @@ export const useAuthStore = create<AuthState>()(
 			userInfo: null,
 			isAuthenticated: false,
 
-			/**
-			 * 设置令牌信息
-			 * @param token - 令牌对象
-			 */
-			setToken: (token) => {
-				set({
-					token,
-					isAuthenticated: !!token.accessToken, // 有 accessToken 则视为已认证
-				});
-			},
+		/**
+		 * 设置令牌信息
+		 * @param token - 令牌对象
+		 */
+		setToken: (token) => {
+			set({
+				token,
+				isAuthenticated: !!token.access_token, // 有 access_token 则视为已认证
+			});
+		},
 
 			/**
 			 * 设置用户信息
@@ -65,19 +65,19 @@ export const useAuthStore = create<AuthState>()(
 				set({ userInfo: user });
 			},
 
-			/**
-			 * 单独刷新访问令牌（适用于令牌过期场景）
-			 * @param newToken - 新的 accessToken
-			 */
-			refreshAccessToken: (newToken) => {
-				const currentToken = get().token;
-				if (currentToken) {
-					set({
-						token: { ...currentToken, accessToken: newToken },
-						isAuthenticated: true,
-					});
-				}
-			},
+		/**
+		 * 单独刷新访问令牌（适用于令牌过期场景）
+		 * @param newToken - 新的 access_token
+		 */
+		refreshAccessToken: (newToken) => {
+			const currentToken = get().token;
+			if (currentToken) {
+				set({
+					token: { ...currentToken, access_token: newToken },
+					isAuthenticated: true,
+				});
+			}
+		},
 
 			/**
 			 * 登出：清空所有认证相关状态
