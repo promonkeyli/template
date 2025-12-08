@@ -14,8 +14,8 @@ export default defineAppConfig({
   },
   tabBar: {
     // custom: true, // vite 版本的自定义tabbar 编译现在bug，等待后续官方修复
-    color: '#000000',
-    selectedColor: '#9BAA6A',
+    color: '#999999',
+    selectedColor: '#62834e', // 主题色
     backgroundColor: '#ffffff',
     list: [
       {
