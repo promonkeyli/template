@@ -17,11 +17,11 @@ type ServerConfig struct {
 
 func NewServerConfig() ServerConfig {
 	return ServerConfig{
-		Host:     "139.155.143.190",
-		User:     "young",
-		Password: "ly123456",
-		DBName:   "admin",
-		Port:     5432,
-		TimeZone: "Asia/Shanghai",
+		Host:     "",
+		User:     "",
+		Password: "",
+		DBName:   "",
+		Port:     0,
+		TimeZone: "",
 	}
 }

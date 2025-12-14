@@ -7,7 +7,7 @@ import "fmt"
  * @return string
  */
 func NewPostgreDSN() string {
-	conf := NewServerConfig()
+	conf := NewServerLocalConfig()
 
 	return fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%d TimeZone=%s",
