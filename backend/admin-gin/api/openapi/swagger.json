@@ -1,0 +1,136 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Mall API 服务接口文档",
+        "title": "Mall API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8081",
+    "basePath": "/",
+    "paths": {
+        "/admin/auth/register": {
+            "post": {
+                "description": "使用用户名密码进行注册",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "用户注册",
+                "parameters": [
+                    {
+                        "description": "登录信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/network.HttpResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/network.HttpResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "auth.LoginReq": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "description": "密码",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "用户名",
+                    "type": "string"
+                }
+            }
+        },
+        "network.Code": {
+            "type": "integer",
+            "enum": [
+                0,
+                2000,
+                2001,
+                2002
+            ],
+            "x-enum-comments": {
+                "Failed": "失败",
+                "NotFound": "资源不存在",
+                "Success": "成功",
+                "Unauthorized": "未授权"
+            },
+            "x-enum-descriptions": [
+                "成功",
+                "失败",
+                "未授权",
+                "资源不存在"
+            ],
+            "x-enum-varnames": [
+                "Success",
+                "Failed",
+                "Unauthorized",
+                "NotFound"
+            ]
+        },
+        "network.HttpResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "业务状态码",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/network.Code"
+                        }
+                    ]
+                },
+                "data": {
+                    "description": "响应数据(可以为空)"
+                },
+                "message": {
+                    "description": "响应描述",
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

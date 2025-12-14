@@ -1,0 +1,95 @@
+basePath: /
+definitions:
+  auth.LoginReq:
+    properties:
+      password:
+        description: 密码
+        type: string
+      username:
+        description: 用户名
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  network.Code:
+    enum:
+    - 0
+    - 2000
+    - 2001
+    - 2002
+    type: integer
+    x-enum-comments:
+      Failed: 失败
+      NotFound: 资源不存在
+      Success: 成功
+      Unauthorized: 未授权
+    x-enum-descriptions:
+    - 成功
+    - 失败
+    - 未授权
+    - 资源不存在
+    x-enum-varnames:
+    - Success
+    - Failed
+    - Unauthorized
+    - NotFound
+  network.HttpResponse:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/network.Code'
+        description: 业务状态码
+      data:
+        description: 响应数据(可以为空)
+      message:
+        description: 响应描述
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Mall API 服务接口文档
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Mall API
+  version: "1.0"
+paths:
+  /admin/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: 使用用户名密码进行注册
+      parameters:
+      - description: 登录信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/network.HttpResponse'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/network.HttpResponse'
+      summary: 用户注册
+      tags:
+      - Auth
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

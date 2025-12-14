@@ -1,43 +1,83 @@
-package main
+//	@title			Mall API
+//	@version		1.0
+//	@description	Mall API 服务接口文档
+//	@termsOfService	http://swagger.io/terms/
 
-import (
-	"os"
+//	@contact.name	API Support
+//	@contact.url	http://www.swagger.io/support
+//	@contact.email	support@swagger.io
 
-	"github.com/gin-gonic/gin"
-	"web_backend.com/m/v2/internal/database"
-	"web_backend.com/m/v2/internal/pkg/middleware"
-	"web_backend.com/m/v2/internal/router"
-)
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-func init() {
-	mode := os.Getenv("GIN_MODE") // docker build时会自动注入为release生产模式
-	if mode == "" {
-		mode = gin.DebugMode // 开发以及调试阶段使用：输出详细的调试信息，包括请求的详细日志、路由匹配信息等，有助于开发者在开发和调试阶段快速定位问题。性能较低
-	}
-	gin.SetMode(mode)
-	database.Init()
-}
-
-//	@title			个人网站后台接口文档
-//	@version		0.0.1
-//	@description	Go编写的个人网站后台接口
+//	@host		localhost:8081
+//	@BasePath	/
 
 //	@securityDefinitions.apikey	BearerAuth
 //	@in							header
 //	@name						Authorization
-//	@description				JWT认证，格式: Bearer <token>
+//	@description				Type "Bearer" followed by a space and JWT token.
 
-//	@tag.name			auth
-//	@tag.description	权限模块
+package main
 
-//	@tag.name			user
-//	@tag.description	用户模块
+import (
+	"mall-api/internal/database"
+	"mall-api/internal/logger"
+	"mall-api/internal/pkg/mw"
+	"mall-api/internal/router"
 
-// @tag.name			tool
-// @tag.description	工具模块
+	"github.com/gin-gonic/gin"
+)
+
 func main() {
-	r := gin.Default()
-	r.Use(middleware.CorsMiddleware())
-	router.Router(r)
+
+	// 初始化 slog 日志
+	logger.Init()
+
+	// 初始化数据库连接
+	db, err := database.InitDB()
+	if err != nil {
+		logger.Log.Error("数据库初始化失败", "error", err)
+		return
+	}
+
+	// 数据库自动迁移
+	if err := database.InitAutoMigrate(db); err != nil {
+		logger.Log.Error("数据库迁移失败", "error", err)
+		return
+	}
+
+	// 修改 Gin 所有日志使用 slog
+	gin.DefaultWriter = logger.Writer()
+	gin.DefaultErrorWriter = logger.Writer()
+
+	// 移除该警告使用gin.New(): [GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+	r := gin.New()
+
+	// 移除该警告：[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+	r.SetTrustedProxies(nil)
+
+	// 挂载日志中间件
+	r.Use(mw.SlogLog())
+
+	// 挂载错误恢复中间件
+	r.Use(mw.SlogRecovery())
+
+	// 挂载跨域中间件
+	r.Use(mw.Cors())
+
+	// JWT鉴权中间件将在具体的路由组中按需注册
+
+	// 初始化 Redis 连接
+	rdb, err := database.InitRedis()
+	if err != nil {
+		logger.Log.Error("Redis 初始化失败", "error", err)
+		return
+	}
+
+	// 注册路由 (传入 handler)
+	router.Router(r, db, rdb)
+
+	// 启动服务
 	r.Run(":8081")
 }
