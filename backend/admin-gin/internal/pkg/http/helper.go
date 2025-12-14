@@ -33,6 +33,7 @@ type FailOption struct {
 //   - network.OK(c, &OKOption{Data: user})                           // 使用默认消息
 //   - network.OK(c, &OKOption{Message: "登录成功", Data: token})      // 自定义消息
 func OK(c *gin.Context, opt *OKOption) {
+	// 规范：HTTP 永远返回 200；响应体 code 使用业务码 Success(=200)
 	c.JSON(http.StatusOK, NewResponse(Success, opt.Message, opt.Data))
 }
 
@@ -41,6 +42,7 @@ func OK(c *gin.Context, opt *OKOption) {
 //   - network.OKWithPage(c, &PageOption{Data: items, Page: 1, Size: 10, Total: 100})                    // 使用默认消息
 //   - network.OKWithPage(c, &PageOption{Message: "查询成功", Data: items, Page: 1, Size: 10, Total: 100}) // 自定义消息
 func OKWithPage(c *gin.Context, opt *PageOption) {
+	// 规范：HTTP 永远返回 200；响应体 code 使用业务码 Success(=200)
 	c.JSON(http.StatusOK, NewPageResponse(Success, opt.Message, opt.Data, opt.Page, opt.Size, opt.Total))
 }
 

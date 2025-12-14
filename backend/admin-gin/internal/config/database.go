@@ -2,10 +2,7 @@ package config
 
 import "fmt"
 
-/**
- * @description PostgreSQL data source name (DSN)
- * @return string
- */
+// PostgreSQL data source name (DSN)
 func NewPostgreDSN() string {
 	conf := NewServerLocalConfig()
 

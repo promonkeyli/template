@@ -39,12 +39,12 @@ requestInstance.interceptors.request.use(
 // -------------------------- 响应拦截器 --------------------------
 requestInstance.interceptors.response.use((response: AxiosResponse) => {
 	const { status } = response;
-	if (status === 200 && response.data.code === 0) {
+	if (status === 200 && response.data.code === 200) {
 		return response.data; // 直接返回业务数据
 	} else {
 		console.log("请求失败", response.data);
 		return Promise.reject(response.data);
-	}	
+	}
 });
 
 /**

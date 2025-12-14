@@ -15,10 +15,18 @@ func JWT() gin.HandlerFunc {
 		tokenString := c.GetHeader("Authorization")
 
 		// 检查token是否存在且格式正确
-		if tokenString == "" || !strings.HasPrefix(tokenString, "Bearer ") {
+		if tokenString == "" {
 			http.Fail(c, &http.FailOption{
 				Code:    http.Unauthorized,
-				Message: "缺少或格式错误的令牌",
+				Message: "缺少令牌",
+			})
+			c.Abort()
+			return
+		}
+		if !strings.HasPrefix(tokenString, "Bearer ") {
+			http.Fail(c, &http.FailOption{
+				Code:    http.TokenInvalid,
+				Message: "令牌格式错误",
 			})
 			c.Abort()
 			return
@@ -33,12 +41,12 @@ func JWT() gin.HandlerFunc {
 			// 区分token过期和其他错误
 			if err == util.ErrExpiredToken {
 				http.Fail(c, &http.FailOption{
-					Code:    http.Unauthorized,
+					Code:    http.TokenExpired,
 					Message: "令牌已过期",
 				})
 			} else {
 				http.Fail(c, &http.FailOption{
-					Code:    http.Unauthorized,
+					Code:    http.TokenInvalid,
 					Message: "无效的令牌",
 				})
 			}

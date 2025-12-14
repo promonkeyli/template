@@ -1,15 +1,11 @@
 package auth
 
-import (
-	"mall-api/internal/app/admin/user"
-
-	"gorm.io/gorm"
-)
+import "gorm.io/gorm"
 
 type Repository interface {
-	FindUserIsExist(name string) (bool, error)      // 查找用户是否存在
-	CreateUser(user *user.User) error               // 创建新用户
-	FindUserByName(name string) (*user.User, error) // 根据用户名查找用户
+	FindUserIsExist(username string) (bool, error)    // 查找用户是否存在
+	CreateUser(account *Account) error                // 创建新用户
+	FindUserByName(username string) (*Account, error) // 根据用户名查找用户
 }
 
 type repo struct {
@@ -21,27 +17,39 @@ func NewRepository(db *gorm.DB) Repository {
 }
 
 // true: 用户存在；false: 用户不存在
-func (r *repo) FindUserIsExist(name string) (bool, error) {
+func (r *repo) FindUserIsExist(username string) (bool, error) {
 	var count int64
-	if err := r.db.Model(&user.User{}).Where("username = ?", name).Count(&count).Error; err != nil {
+	if err := r.db.Model(&userModel{}).Where("username = ?", username).Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count > 0, nil
 }
 
 // 新增用户记录
-func (r *repo) CreateUser(user *user.User) error {
-	return r.db.Create(user).Error
+func (r *repo) CreateUser(account *Account) error {
+	m := &userModel{
+		UID:       account.UID,
+		Username:  account.Username,
+		Password:  account.Password,
+		Role:      account.Role,
+		IsActive:  account.IsActive,
+		IsDeleted: false,
+	}
+	return r.db.Create(m).Error
 }
 
 // 查找用户记录
-func (r *repo) FindUserByName(name string) (*user.User, error) {
-	var user user.User
-
-	err := r.db.Where("username = ?", name).First(&user).Error
-	if err != nil {
+func (r *repo) FindUserByName(username string) (*Account, error) {
+	var m userModel
+	if err := r.db.Where("username = ?", username).First(&m).Error; err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return &Account{
+		UID:      m.UID,
+		Username: m.Username,
+		Password: m.Password,
+		Role:     m.Role,
+		IsActive: m.IsActive,
+	}, nil
 }

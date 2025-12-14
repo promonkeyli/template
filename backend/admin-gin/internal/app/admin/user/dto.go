@@ -18,8 +18,8 @@ type CreateReq struct {
 	// 选填，但如果有值必须符合邮箱格式
 	Email string `json:"email" binding:"omitempty,email"`
 
-	// 角色，建议用枚举校验
-	Role string `json:"role" binding:"required,oneof=admin operator finance staff"`
+	// 角色：不要写死 oneof，使用 user.Role(req.Role).IsValid() 统一校验（在 handler/service 层做）
+	Role string `json:"role" binding:"required"`
 }
 
 // 【新增】响应体
@@ -40,8 +40,8 @@ type UpdateReq struct {
 	// 允许修改邮箱
 	Email string `json:"email" binding:"omitempty,email"`
 
-	// 允许修改角色
-	Role string `json:"role" binding:"omitempty,oneof=admin operator finance staff"`
+	// 允许修改角色：不要写死 oneof，使用 user.Role(req.Role).IsValid() 统一校验（在 handler/service 层做）
+	Role string `json:"role" binding:"omitempty"`
 
 	// 使用指针，以便区分 "不修改" 和 "修改为禁用(false)"
 	IsActive *bool `json:"is_active"`

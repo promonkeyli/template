@@ -2,9 +2,7 @@ package auth
 
 import (
 	"errors"
-	"mall-api/internal/app/admin/user"
 	"mall-api/internal/pkg/util"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -36,26 +34,22 @@ func (s *service) Register(req *RegisterReq) error {
 	// 2. 生成全局唯一 UID
 	uid := util.MewUUID()
 
-	// 3. 加密密码：password []byte
-	// 你要加密的原始密码，需要转成字节切片。
-	// 这里写 []byte(req.Password) 就是把用户输入的字符串密码转换成字节切片。
-	// cost int：加密强度（迭代次数，越高越安全，但计算越慢）bcrypt.DefaultCost 是官方推荐默认值，通常是 10。
+	// 3. 加密密码（bcrypt hash）
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	// 4. 构建 user 数据
-	userData := &user.User{
-		UID:       uid,
-		IsActive:  true,
-		Username:  req.Username,
-		IsDeleted: false,
-		Password:  string(hashedPassword),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+	// 4. 构建 auth 领域的最小账号信息（与 user 模块解耦）
+	account := &Account{
+		UID:      uid,
+		Username: req.Username,
+		Password: string(hashedPassword),
+		Role:     "admin",
+		IsActive: true,
 	}
-	if err := s.repo.CreateUser(userData); err != nil {
+
+	if err := s.repo.CreateUser(account); err != nil {
 		return err
 	}
 	return nil
@@ -63,25 +57,26 @@ func (s *service) Register(req *RegisterReq) error {
 
 func (s *service) Login(req *LoginReq) (LoginRes, error) {
 	// 1. 查找用户
-	targetUser, err1 := s.repo.FindUserByName(req.Username)
-	if err1 != nil {
-		return LoginRes{}, err1
+	account, err := s.repo.FindUserByName(req.Username)
+	if err != nil {
+		return LoginRes{}, err
 	}
-	// 2. 校验用户密码是否正确（先解密数据库的密码，再对比）
-	err2 := bcrypt.CompareHashAndPassword([]byte(targetUser.Password), []byte(req.Password))
-	if err2 != nil {
+
+	// 2. 校验用户密码是否正确（对比 hash 与明文）
+	if err := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(req.Password)); err != nil {
 		return LoginRes{}, errors.New("密码不正确")
 	}
-	// 3. 构建token
-	token_pair, err3 := util.GenerateTokenPair(targetUser.UID)
-	if err3 != nil {
-		return LoginRes{}, err3
-	} else {
-		return LoginRes{
-			UID:          targetUser.UID,
-			AccessToken:  token_pair.AccessToken,
-			RefreshToken: token_pair.RefreshToken,
-			ExpiresAt:    token_pair.ExpiresAt,
-		}, nil
+
+	// 3. 构建 token
+	tokenPair, err := util.GenerateTokenPair(account.UID)
+	if err != nil {
+		return LoginRes{}, err
 	}
+
+	return LoginRes{
+		UID:          account.UID,
+		AccessToken:  tokenPair.AccessToken,
+		RefreshToken: tokenPair.RefreshToken,
+		ExpiresAt:    tokenPair.ExpiresAt,
+	}, nil
 }

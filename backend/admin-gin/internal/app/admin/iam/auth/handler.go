@@ -29,7 +29,7 @@ func (h *Handler) Register(c *gin.Context) {
 	var req RegisterReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		http.Fail(c, &http.FailOption{
-			Code:    http.Failed,
+			Code:    http.InvalidParam,
 			Message: "参数错误",
 		})
 		return
@@ -38,7 +38,7 @@ func (h *Handler) Register(c *gin.Context) {
 	// 2. 调用 service 层的用户注册
 	if err := h.service.Register(&req); err != nil {
 		http.Fail(c, &http.FailOption{
-			Code:    http.Failed,
+			Code:    http.Conflict,
 			Message: err.Error(),
 		})
 		return
@@ -59,7 +59,7 @@ func (h *Handler) Login(c *gin.Context) {
 	var req LoginReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		http.Fail(c, &http.FailOption{
-			Code:    http.Failed,
+			Code:    http.InvalidParam,
 			Message: "参数错误",
 		})
 		return
@@ -69,7 +69,7 @@ func (h *Handler) Login(c *gin.Context) {
 	res, err := h.service.Login(&req)
 	if err != nil {
 		http.Fail(c, &http.FailOption{
-			Code:    http.Failed,
+			Code:    http.Unauthorized,
 			Message: err.Error(),
 		})
 	} else {

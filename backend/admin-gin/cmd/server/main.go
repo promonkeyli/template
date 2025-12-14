@@ -24,7 +24,7 @@ import (
 	"mall-api/internal/database"
 	"mall-api/internal/logger"
 	"mall-api/internal/pkg/mw"
-	"mall-api/internal/router"
+	"mall-api/internal/wire"
 
 	"github.com/gin-gonic/gin"
 )
@@ -34,15 +34,15 @@ func main() {
 	// 初始化 slog 日志
 	logger.Init()
 
-	// 初始化数据库连接
-	db, err := database.InitDB()
+	// 使用 Wire 初始化应用（DB/Redis/Router Wiring）
+	app, err := wire.InitApp()
 	if err != nil {
-		logger.Log.Error("数据库初始化失败", "error", err)
+		logger.Log.Error("应用初始化失败", "error", err)
 		return
 	}
 
 	// 数据库自动迁移
-	if err := database.InitAutoMigrate(db); err != nil {
+	if err := database.InitAutoMigrate(app.DB); err != nil {
 		logger.Log.Error("数据库迁移失败", "error", err)
 		return
 	}
@@ -51,8 +51,8 @@ func main() {
 	gin.DefaultWriter = logger.Writer()
 	gin.DefaultErrorWriter = logger.Writer()
 
-	// 移除该警告使用gin.New(): [GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
-	r := gin.New()
+	// 使用 Wire 创建的 Engine（内部已完成路由注册）
+	r := app.Engine
 
 	// 移除该警告：[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
 	r.SetTrustedProxies(nil)
@@ -65,18 +65,6 @@ func main() {
 
 	// 挂载跨域中间件
 	r.Use(mw.Cors())
-
-	// JWT鉴权中间件将在具体的路由组中按需注册
-
-	// 初始化 Redis 连接
-	rdb, err := database.InitRedis()
-	if err != nil {
-		logger.Log.Error("Redis 初始化失败", "error", err)
-		return
-	}
-
-	// 注册路由 (传入 handler)
-	router.Router(r, db, rdb)
 
 	// 启动服务
 	r.Run(":8081")

@@ -8,42 +8,99 @@
 *   **Web 框架**: [Gin](https://github.com/gin-gonic/gin) - 高性能 HTTP Web 框架
 *   **ORM**: [GORM](https://gorm.io/) - Go 语言优秀的 ORM 库
 *   **数据库**: PostgreSQL
-*   **认证**: 双 Token 认证 (JWT Access Token + Refresh Token)
+*   **认证**: JWT (Bearer Token)
 *   **缓存/KV存储**: [go-redis](https://github.com/redis/go-redis) - 官方推荐的 Redis 客户端
+*   **依赖注入**: [google/wire](https://github.com/google/wire) (编译期依赖注入，用于集中装配模块依赖)
 *   **日志**: [log/slog](https://pkg.go.dev/log/slog) - Go 1.21+ 标准库结构化日志
 *   **操作系统/工具**: Linux/macOS
 *   **文档**: Swagger / OpenAPI (通过 `swaggo`)
 
-## 项目结构最佳实践
+## 项目结构（实际目录与路由）
 
-本项目采用 **领域驱动设计 (DDD)** 结合 **整洁架构** 的思想，按照业务领域进行拆分，并对 API 版本进行管理。这种结构确保了代码的高内聚、低耦合以及良好的可扩展性。
+本项目采用“按业务模块聚合”的分层结构，数据流向保持单向依赖：`Router -> Handler -> Service -> Repository -> Database`。
 
-### 目录结构说明
+当前 admin 模块主要目录如下（与代码一致）：
 
 ```bash
 mall-api/
-├── cmd/                  # 应用程序入口
+├── cmd/
 │   └── server/
 │       └── main.go
 ├── internal/
-│   ├── app/              # 核心业务逻辑（按领域划分）
-│   │   ├── user/         # [User 领域]
-│   │   │   ├── v1/       # API 版本控制
-│   │   │   │   ├── handler.go    # 接口层：处理 HTTP 请求与响应
-│   │   │   │   ├── service.go    # 业务层：具体的业务逻辑实现
-│   │   │   │   ├── dto.go        # 数据传输对象：定义 API 输入输出结构
-│   │   │   │   └── router.go     # 路由层：注册该领域的路由
-│   │   │   ├── model.go          # 领域模型：数据库实体定义
-│   │   │   └── repository.go     # 仓储层接口与实现：屏蔽底层数据库差异
-│   │   └── auth/         # [Auth 领域]
-│   ├── config/           # 配置定义与加载
-│   ├── database/         # 数据库连接组件
-│   ├── router/           # 全局路由入口
-│   └── pkg/              # 内部共享工具包
-├── pkg/                  # 公共库（可被外部引用）
-├── api/                  # OpenAPI/Swagger 接口文档
-└── Makefile             # 项目管理命令
+│   ├── app/
+│   │   └── admin/
+│   │       ├── iam/
+│   │       │   └── auth/
+│   │       │       ├── dto.go
+│   │       │       ├── handler.go
+│   │       │       ├── model.go          # auth 自己的 Account + GORM 映射模型（与 user 解耦，但共用同表）
+│   │       │       ├── repository.go
+│   │       │       ├── service.go
+│   │       │       └── router.go         # RegisterRouter(r, handler)
+│   │       ├── user/
+│   │       │   ├── constant.go
+│   │       │   ├── dto.go
+│   │       │   ├── handler.go            # user 常用 CRUD + swagger 注释
+│   │       │   ├── model.go
+│   │       │   ├── repository.go
+│   │       │   ├── service.go
+│   │       │   └── router.go             # RegisterRouter(r, handler)
+│   │       └── wire/
+│   │           ├── wire.go               #go:build wireinject（注入器声明）
+│   │           └── wire_gen.go           # 生成文件（默认编译使用）
+│   ├── database/
+│   │   ├── postgre.go                    # InitDB（单数表名 SingularTable=true）
+│   │   └── redis.go                      # InitRedis
+│   ├── router/
+│   │   └── router.go                     # 全局路由入口（admin 路由注册）
+│   ├── wire/
+│   │   ├── wire.go                       #go:build wireinject（全应用注入器声明）
+│   │   └── wire_gen.go                   # 生成文件
+│   └── pkg/
+│       ├── http/                         # 统一响应、分页请求
+│       └── mw/                           # JWT / cors / log / recover
+└── api/
+    └── openapi/                          # swaggo 生成的 swagger 文档输出目录
 ```
+
+> 说明：`wire.go` 文件带有 `wireinject` build tag，默认会被编辑器/gopls 排除；查看实现请打开对应的 `wire_gen.go`。
+
+## Admin 用户模块（/admin/user）接口
+
+该模块用于后台“管理员用户”管理（与登录认证用户表共用）。
+
+统一鉴权：所有 `/admin/user` 路由均需要 `Authorization: Bearer <access_token>`。
+
+### 1) 获取用户列表（分页）
+
+- **GET** `/admin/user`
+- Query:
+  - `page` (int, default 1)
+  - `size` (int, default 10, max 100)
+  - `role` (string, optional)
+  - `keyword` (string, optional，匹配 uid/username/email)
+
+### 2) 创建用户
+
+- **POST** `/admin/user`
+- Body: `CreateReq`
+  - `username` (required)
+  - `password` (required, 明文传入，服务端 bcrypt)
+  - `email` (optional)
+  - `role` (required，服务端按 `user.Role.IsValid()` 校验)
+
+### 3) 更新用户
+
+- **PUT** `/admin/user/{uid}`
+- Body: `UpdateReq`
+  - `email` (optional)
+  - `role` (optional，服务端按 `user.Role.IsValid()` 校验)
+  - `is_active` (optional, *bool，区分“不修改/修改为 false”)
+
+### 4) 删除用户（软删除）
+
+- **DELETE** `/admin/user/{uid}`
+- 行为：设置 `is_deleted=true`（软删除）
 
 ## 开发最佳实践
 
@@ -60,17 +117,17 @@ mall-api/
 
 本项目严格遵循 RESTful 风格，仅使用以下四种 HTTP 方法。
 
-*   **URL 设计**: 使用 **复数名词** 表达资源，路径 **全小写** (e.g., `/app/v1/users`)。
+*   **URL 设计**: 使用名词表达资源，路径 **全小写** (e.g., `/admin/user`)。
 *   **方法使用**:
 
     | 方法 | 描述 | 适用场景 | 示例 |
     | :--- | :--- | :--- | :--- |
-    | **GET** | 查询资源 | 获取列表、获取详情 | `GET /users` (列表)<br>`GET /users/:id` (详情) |
-    | **POST** | 创建资源 | 新增一条数据 | `POST /users` |
-    | **PUT** | 更新资源 | 修改现有数据 (全量或部分更新) | `PUT /users/:id` |
-    | **DELETE** | 删除资源 | 删除一条数据 | `DELETE /users/:id` |
+    | **GET** | 查询资源 | 获取列表、获取详情 | `GET /admin/user` |
+    | **POST** | 创建资源 | 新增一条数据 | `POST /admin/user` |
+    | **PUT** | 更新资源 | 修改现有数据 (全量或部分更新) | `PUT /admin/user/:uid` |
+    | **DELETE** | 删除资源 | 删除一条数据 | `DELETE /admin/user/:uid` |
 
-> **注意**: 不使用 `PATCH` 等其他方法。统一使用 `PUT` 处理更新操作。
+> **注意**: 本项目统一使用 `PUT` 处理更新操作。
 
 ### 3. 分层架构与数据流
 
@@ -95,51 +152,15 @@ mall-api/
 
 *   **Model (数据模型)**:
     *   **职责**: 定义与数据库表一一对应的结构体 (Struct)，包含 GORM 标签。
-    *   **位置**: 通常位于领域层 `internal/app/{domain}/model.go`。
+    *   **位置**: 通常位于模块目录 `internal/app/admin/{module}/model.go`。
 
 *   **DTO (数据传输对象)**:
     *   **职责**: 定义 API 输入参数 (Request) 和输出响应 (Response) 的结构。
     *   **目的**: 将 HTTP 接口契约与底层数据库模型解耦，防止 API 变更影响数据库，反之亦然。
-    *   **位置**: 通常位于版本层 `internal/app/{domain}/v1/dto.go`。
-
-#### 3.2 数据流向图 (Data Flow)
-
-以下展示了从 **请求进入** 到 **响应返回** 的完整流程，以及各层之间的数据载体变化。
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant Client
-    participant H as Handler (Interface)
-    participant S as Service (Business)
-    participant R as Repository (Data)
-    participant D as Database
-
-    Client->>H: 1. Request (JSON)
-    Note right of H: Parse JSON -> DTO
-    H->>S: 2. Call Service (DTO)
-    Note right of S: Logic Check<br/>Convert DTO -> Model
-    S->>R: 3. Call Repo (Model)
-    R->>D: 4. DB Operation
-    D-->>R: Result
-    R-->>S: Return Model/Error
-    Note right of S: Convert Model -> DTO
-    S-->>H: Return DTO
-    Note right of H: Format Response
-    H-->>Client: 5. Response (JSON)
-```
-
-**关键转换节点**:
-1.  **入口 (Handler)**: `JSON` (外部) -> `DTO` (内部交互)。
-2.  **业务 (Service)**: `DTO` (传输) -> `Model` (领域实体)。
-3.  **持久化 (Repo)**: `Model` -> `SQL/DB Record`。
-4.  **返回**: 逆向转换 `Model` -> `DTO` -> `JSON`。
-
-
 
 ### 4. 统一响应格式
 
-所有 API 接口返回的数据结构保持一致，推荐使用 `internal/pkg/network` 包中的辅助函数 `network.OK` (不分页)、`network.OKWithPage` (分页) 以及 `network.Fail` (失败) 进行处理。
+所有 API 接口返回的数据结构保持一致，使用 `internal/pkg/http` 包中的辅助函数 `http.OK`（不分页）、`http.OKWithPage`（分页）以及 `http.Fail`（失败）进行处理。
 
 #### 4.1 基础结构（不分页）
 
@@ -147,7 +168,7 @@ sequenceDiagram
 
 ```go
 // 示例代码
-network.OK(c, &network.OKOption{
+http.OK(c, &http.OKOption{
     Data: user,
 })
 ```
@@ -160,7 +181,7 @@ network.OK(c, &network.OKOption{
   "data": {
     "uid": "u123",
     "nickname": "TopG"
-  },
+  }
 }
 ```
 
@@ -170,7 +191,7 @@ network.OK(c, &network.OKOption{
 
 ```go
 // 示例代码
-network.OKWithPage(c, &network.PageOption{
+http.OKWithPage(c, &http.PageOption{
     Data:  users,
     Page:  1,
     Size:  10,
@@ -189,7 +210,7 @@ network.OKWithPage(c, &network.PageOption{
   ],
   "page": 1,
   "size": 10,
-  "total": 100,
+  "total": 100
 }
 ```
 
@@ -199,8 +220,8 @@ network.OKWithPage(c, &network.PageOption{
 
 ```go
 // 示例代码
-network.Fail(c, &network.FailOption{
-    Code:    network.Unauthorized,
+http.Fail(c, &http.FailOption{
+    Code:    http.Unauthorized,
     Message: "Token 已过期或无效",
 })
 ```
@@ -210,7 +231,7 @@ network.Fail(c, &network.FailOption{
 {
   "code": 40001,
   "message": "Token 已过期或无效",
-  "data": null,
+  "data": null
 }
 ```
 
