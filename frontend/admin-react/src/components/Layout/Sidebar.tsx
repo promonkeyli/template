@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from '@tanstack/react-router'
-import { 
-  LayoutDashboard, 
-  Users, 
-  Settings, 
-  FileText, 
-  BarChart3, 
-  Package,
+import {
+  LayoutDashboard,
+  Users,
+  Settings,
+  BarChart3,
   ChevronLeft,
   ChevronRight,
   Home,
@@ -44,16 +42,6 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'content',
-    label: '内容管理',
-    icon: FileText,
-    path: '/admin/content',
-    children: [
-      { id: 'articles', label: '文章管理', icon: FileText, path: '/admin/content/articles' },
-      { id: 'categories', label: '分类管理', icon: Package, path: '/admin/content/categories' }
-    ]
-  },
-  {
     id: 'analytics',
     label: '数据分析',
     icon: BarChart3,
@@ -85,8 +73,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const handleMenuClick = (item: MenuItem) => {
     if (item.children) {
       // 如果有子菜单，切换展开状态
-      setExpandedItems(prev => 
-        prev.includes(item.id) 
+      setExpandedItems(prev =>
+        prev.includes(item.id)
           ? prev.filter(id => id !== item.id)
           : [...prev, item.id]
       )
@@ -151,11 +139,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 <span className="flex-1 text-left">{item.label}</span>
               )}
               {!collapsed && item.children && (
-                <ChevronRight 
+                <ChevronRight
                   className={cn(
                     "h-4 w-4 transition-transform",
                     isExpanded(item.id) && "rotate-90"
-                  )} 
+                  )}
                 />
               )}
             </Button>

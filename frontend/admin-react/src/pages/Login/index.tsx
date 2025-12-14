@@ -1,27 +1,27 @@
 import { useState } from 'react'
-import { Eye, EyeOff, Lock, Smartphone } from 'lucide-react'
+import { Eye, EyeOff, Lock, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useLogin } from './store'
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
-    phone: '15984093508',
-    password: 'ly15984093508'
+    username: 'admin',
+    password: 'admin@123456'
   })
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   const loginMutation = useLogin()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    
+
     loginMutation.mutate(formData, {
       onError: (error) => {
         setError(error.message)
@@ -40,36 +40,34 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo 区域 */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
-            <Lock className="w-8 h-8 text-primary-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">欢迎回来</h1>
-          <p className="text-muted-foreground">请登录您的账户</p>
-        </div>
+
 
         {/* 登录表单 */}
         <Card className="shadow-xl border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl text-center">登录</CardTitle>
-            <CardDescription className="text-center">
-              输入您的手机号和密码以继续
-            </CardDescription>
+          <CardHeader className="space-y-1">
+            {/* Logo 区域 */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
+                <Lock className="w-8 h-8 text-primary-foreground" />
+              </div>
+              <CardDescription className="text-center">
+                输入您的用户名和密码以继续
+              </CardDescription>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* 手机号输入 */}
+              {/* 用户名输入 */}
               <div className="flex flex-col gap-3">
-                <Label htmlFor="phone">手机号</Label>
+                <Label htmlFor="username">用户名</Label>
                 <div className="relative">
-                  <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="请输入手机号"
-                    value={formData.phone}
+                    id="username"
+                    name="username"
+                    type="text"
+                    placeholder="请输入用户名"
+                    value={formData.username}
                     onChange={handleInputChange}
                     className="pl-10 h-11"
                     required
@@ -155,7 +153,8 @@ export default function Login() {
             </form>
 
             {/* 分割线 */}
-            <div className="relative my-6">
+            {/* 其他登录方式 - 暂时移除 */}
+            {/* <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border" />
               </div>
@@ -164,7 +163,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* 其他登录方式 */}
             <div className="space-y-3">
               <Button
                 variant="outline"
@@ -191,12 +189,12 @@ export default function Login() {
                 </svg>
                 使用 Google 登录
               </Button>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
 
         {/* 底部链接 */}
-        <div className="text-center mt-6 text-sm text-muted-foreground">
+        {/* <div className="text-center mt-6 text-sm text-muted-foreground">
           还没有账户？{' '}
           <Button
             type="button"
@@ -205,7 +203,7 @@ export default function Login() {
           >
             立即注册
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   )

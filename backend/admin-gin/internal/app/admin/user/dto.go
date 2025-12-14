@@ -1,4 +1,4 @@
-package staff
+package user
 
 import (
 	"mall-api/internal/pkg/http"

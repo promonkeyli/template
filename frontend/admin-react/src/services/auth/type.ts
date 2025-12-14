@@ -3,17 +3,17 @@
  */
 
 /**
- * 手机号密码登录请求参数
+ * 用户名密码登录请求参数
  */
-export interface PhoneLoginReq {
-	phone: string;
+export interface LoginReq {
+	username: string;
 	password: string;
 }
 
 /**
  * 登录响应数据
  */
-export interface PhoneLoginRes {
+export interface LoginRes {
 	access_token: string;
 	refresh_token: string;
 	expires_at: number;

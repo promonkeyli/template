@@ -1,8 +1,8 @@
-package staff
+package user
 
 import "time"
 
-type Staff struct {
+type User struct {
 	/** 自增主键（数据库内部使用，不对外暴露） */
 	ID uint64 `gorm:"primaryKey;autoIncrement"`
 
@@ -19,7 +19,7 @@ type Staff struct {
 	Password string `gorm:"size:255;not null"`
 
 	/** 角色标识（RBAC 权限） 示例：admin / operator / finance / customer_service */
-	Role string `gorm:"size:32;default:'staff'"`
+	Role string `gorm:"size:32;default:'admin'"`
 
 	/** 是否启用账号（控制能否登录）*/
 	IsActive bool `gorm:"default:true"`

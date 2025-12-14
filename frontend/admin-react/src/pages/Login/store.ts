@@ -1,15 +1,15 @@
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/auth'
-import { phoneLogin } from '@/services/auth'
-import type { PhoneLoginReq } from '@/services/auth/type'
+import type { LoginReq } from '@/services/auth/type'
+import { fetchLogin } from '@/services/auth'
 
 export const useLogin = () => {
   const navigate = useNavigate()
   const { setToken, setUserInfo } = useAuthStore()
 
   return useMutation({
-    mutationFn: (credentials: PhoneLoginReq) => phoneLogin(credentials),
+    mutationFn: (credentials: LoginReq) => fetchLogin(credentials),
     onSuccess: (response) => {
       console.log('response', response)
       const data = response.data
@@ -27,7 +27,7 @@ export const useLogin = () => {
         roles: [],
         permissions: []
       })
-      
+
       // 登录成功后重定向到首页
       navigate({ to: '/admin' })
     },

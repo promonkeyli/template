@@ -1,4 +1,4 @@
-package staff
+package user
 
 // Define Role type based on string
 // 定义 Role 类型，底层是 string，方便数据库存储和 JSON 序列化

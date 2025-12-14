@@ -2,7 +2,7 @@ package router
 
 import (
 	adminAuth "mall-api/internal/app/admin/iam/auth"
-	adminStaff "mall-api/internal/app/admin/staff"
+	adminUser "mall-api/internal/app/admin/user"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -19,7 +19,7 @@ func Router(r *gin.Engine, d *gorm.DB, rdb *redis.Client) {
 		// auth 路由注册
 		adminAuth.RegisterRouter(r, d, rdb)
 
-		// staff 路由注册
-		adminStaff.RegisterRouter(r, d, rdb)
+		// user 路由注册
+		adminUser.RegisterRouter(r, d, rdb)
 	}
 }

@@ -1,7 +1,7 @@
 package database
 
 import (
-	"mall-api/internal/app/admin/staff"
+	"mall-api/internal/app/admin/user"
 	"mall-api/internal/logger"
 
 	"gorm.io/gorm"
@@ -13,7 +13,7 @@ func InitAutoMigrate(db *gorm.DB) error {
 
 	// 在这里注册需要迁移的模型
 	err := db.AutoMigrate(
-		&staff.Staff{},
+		&user.User{},
 	)
 
 	if err != nil {

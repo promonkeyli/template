@@ -2,7 +2,7 @@ package auth
 
 import (
 	"errors"
-	"mall-api/internal/app/admin/staff"
+	"mall-api/internal/app/admin/user"
 	"mall-api/internal/pkg/util"
 	"time"
 
@@ -27,7 +27,7 @@ func NewService(repo Repository) Service {
 func (s *service) Register(req *RegisterReq) error {
 
 	// 1. 检查用户是否已存在
-	if exist, err := s.repo.FindStaffIsExist(req.Username); err != nil {
+	if exist, err := s.repo.FindUserIsExist(req.Username); err != nil {
 		return err
 	} else if exist {
 		return errors.New("用户已经存在")
@@ -45,8 +45,8 @@ func (s *service) Register(req *RegisterReq) error {
 		return err
 	}
 
-	// 4. 构建 staff 数据
-	staffData := &staff.Staff{
+	// 4. 构建 user 数据
+	userData := &user.User{
 		UID:       uid,
 		IsActive:  true,
 		Username:  req.Username,
@@ -55,7 +55,7 @@ func (s *service) Register(req *RegisterReq) error {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	if err := s.repo.CreateStaff(staffData); err != nil {
+	if err := s.repo.CreateUser(userData); err != nil {
 		return err
 	}
 	return nil
@@ -63,22 +63,22 @@ func (s *service) Register(req *RegisterReq) error {
 
 func (s *service) Login(req *LoginReq) (LoginRes, error) {
 	// 1. 查找用户
-	targetStaff, err1 := s.repo.FindStaffByName(req.Username)
+	targetUser, err1 := s.repo.FindUserByName(req.Username)
 	if err1 != nil {
 		return LoginRes{}, err1
 	}
 	// 2. 校验用户密码是否正确（先解密数据库的密码，再对比）
-	err2 := bcrypt.CompareHashAndPassword([]byte(targetStaff.Password), []byte(req.Password))
+	err2 := bcrypt.CompareHashAndPassword([]byte(targetUser.Password), []byte(req.Password))
 	if err2 != nil {
 		return LoginRes{}, errors.New("密码不正确")
 	}
 	// 3. 构建token
-	token_pair, err3 := util.GenerateTokenPair(targetStaff.UID)
+	token_pair, err3 := util.GenerateTokenPair(targetUser.UID)
 	if err3 != nil {
 		return LoginRes{}, err3
 	} else {
 		return LoginRes{
-			UID:          targetStaff.UID,
+			UID:          targetUser.UID,
 			AccessToken:  token_pair.AccessToken,
 			RefreshToken: token_pair.RefreshToken,
 			ExpiresAt:    token_pair.ExpiresAt,
