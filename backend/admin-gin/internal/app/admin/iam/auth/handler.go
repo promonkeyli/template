@@ -85,5 +85,32 @@ func (h *Handler) Login(c *gin.Context) {
 
 // }
 
-// refresh token
-func (h *Handler) Refresh(c *gin.Context) {}
+// 刷新 token
+func (h *Handler) RefreshToken(c *gin.Context) {
+
+	// 1.参数校验
+	var req RefreshReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		http.Fail(c, &http.FailOption{
+			Code:    http.InvalidParam,
+			Message: http.InvalidParam.Message(),
+		})
+		return
+	}
+
+	// 2.调用 service 层的 refresh 业务
+	res, err := h.service.Refresh(c.Request.Context(), &req)
+	if err != nil {
+		http.Fail(c, &http.FailOption{
+			Code:    http.Failed,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	// 3.返回 token 对
+	http.OK(c, &http.OKOption{
+		Data:    res,
+		Message: http.Success.Message(),
+	})
+}

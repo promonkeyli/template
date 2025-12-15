@@ -1,15 +1,18 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"mall-api/internal/pkg/util"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Service interface {
-	Register(req *RegisterReq) error       // 注册
-	Login(req *LoginReq) (LoginRes, error) // 登录
+	Register(req *RegisterReq) error                                 // 注册
+	Login(req *LoginReq) (LoginRes, error)                           // 登录
+	Refresh(ctx context.Context, req *RefreshReq) (*LoginRes, error) // 刷新 token
 }
 
 type service struct {
@@ -75,6 +78,48 @@ func (s *service) Login(req *LoginReq) (LoginRes, error) {
 
 	return LoginRes{
 		UID:          account.UID,
+		AccessToken:  tokenPair.AccessToken,
+		RefreshToken: tokenPair.RefreshToken,
+		ExpiresAt:    tokenPair.ExpiresAt,
+	}, nil
+}
+
+func (s *service) Refresh(ctx context.Context, req *RefreshReq) (*LoginRes, error) {
+
+	// 1. 解析 refresh_token，静态校验
+	claims, err := util.ParseRefreshToken(req.RefreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. 从jwt中提取UID
+	uid := claims.UID
+
+	// 3. redis 值校验
+	savedRefreshToken, err2 := s.repo.GetRefreshToken(ctx, uid)
+	if err2 != nil {
+		return nil, err2
+	}
+
+	// 4. redis 取出来的token和前端传的 refresh token进行对比
+	if savedRefreshToken != req.RefreshToken {
+		return nil, errors.New("刷新token无效")
+	}
+
+	// 5.签发新的token对
+	tokenPair, err3 := util.GenerateTokenPair(uid)
+	if err3 != nil {
+		return nil, err3
+	}
+
+	// 6. 新的refresh token存在redis
+	if err := s.repo.SetRefreshToken(ctx, uid, tokenPair.RefreshToken, 7*24*time.Hour); err != nil {
+		return nil, err
+	}
+
+	// 7. 返回 签发的token信息
+	return &LoginRes{
+		UID:          uid,
 		AccessToken:  tokenPair.AccessToken,
 		RefreshToken: tokenPair.RefreshToken,
 		ExpiresAt:    tokenPair.ExpiresAt,

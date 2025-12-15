@@ -7,6 +7,9 @@ MAIN=./cmd/server/main.go
 # OpenAPI 文档生成工具入口文件
 OPENAPI=./cmd/openapi/main.go
 
+# wire 依赖注入
+WIRE=./internal/app/admin/wire/wire.go
+
 # Go 工具安装目录（用于找到 swag 等工具）
 GOBIN=$(shell go env GOPATH)/bin
 
@@ -24,3 +27,8 @@ swag:
 build:
 	@echo "正在构建..."
 	go build -o bin/$(BINARY_NAME) cmd/server/main.go
+
+# wire 依赖注入
+wire:
+	@echo "正在生成依赖注入..."
+	go generate $(WIRE)
