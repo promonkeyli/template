@@ -1,13 +1,15 @@
 /**
  * @description: 基于Axios的请求简易封装
  */
-
 import axios, { type AxiosResponse } from "axios";
+import type {
+	ApiResponse,
+	IAxiosRequestConfig,
+	IInternalAxiosRequestConfig,
+} from "@/services/types"; // 导入类型扩展
 import { useAuthStore } from "@/stores/auth.ts";
-import type { ApiResponse, IAxiosRequestConfig, IInternalAxiosRequestConfig } from "@/services/types"; // 导入类型扩展
 
-// axios 实例
-const requestInstance = axios.create({
+const axiosInstance = axios.create({
 	baseURL: import.meta.env.VITE_API_BASE_URL,
 	timeout: 1000,
 	headers: {
@@ -16,18 +18,18 @@ const requestInstance = axios.create({
 });
 
 // -------------------------- 请求拦截器 --------------------------
-requestInstance.interceptors.request.use(
+axiosInstance.interceptors.request.use(
 	(config: IInternalAxiosRequestConfig) => {
 		// 判断是否跳过鉴权，默认为false（需要鉴权）
 		if (config.isSkipAuth) {
 			return config;
 		}
 
-	// 添加token
-	const token = useAuthStore.getState().token;
-	if (token) {
-		config.headers.Authorization = `Bearer ${token.access_token}`;
-	}
+		// 添加token
+		const token = useAuthStore.getState().token;
+		if (token) {
+			config.headers.Authorization = `Bearer ${token.access_token}`;
+		}
 		return config;
 	},
 	(error) => {
@@ -37,7 +39,7 @@ requestInstance.interceptors.request.use(
 );
 
 // -------------------------- 响应拦截器 --------------------------
-requestInstance.interceptors.response.use((response: AxiosResponse) => {
+axiosInstance.interceptors.response.use((response: AxiosResponse) => {
 	const { status } = response;
 	if (status === 200 && response.data.code === 200) {
 		return response.data; // 直接返回业务数据
@@ -52,20 +54,34 @@ requestInstance.interceptors.response.use((response: AxiosResponse) => {
  */
 const request = {
 	request: <T = any>(config: IAxiosRequestConfig): Promise<ApiResponse<T>> => {
-		return requestInstance.request<ApiResponse<T>>(config) as any;
+		return axiosInstance.request<ApiResponse<T>>(config) as any;
 	},
-	get: <T = any>(url: string, config?: IAxiosRequestConfig): Promise<ApiResponse<T>> => {
-		return requestInstance.get<ApiResponse<T>>(url, config) as any;
+	get: <T = any>(
+		url: string,
+		config?: IAxiosRequestConfig,
+	): Promise<ApiResponse<T>> => {
+		return axiosInstance.get<ApiResponse<T>>(url, config) as any;
 	},
-	post: <T = any>(url: string, data?: any, config?: IAxiosRequestConfig): Promise<ApiResponse<T>> => {
-		return requestInstance.post<ApiResponse<T>>(url, data, config) as any;
+	post: <T = any>(
+		url: string,
+		data?: any,
+		config?: IAxiosRequestConfig,
+	): Promise<ApiResponse<T>> => {
+		return axiosInstance.post<ApiResponse<T>>(url, data, config) as any;
 	},
-	put: <T = any>(url: string, data?: any, config?: IAxiosRequestConfig): Promise<ApiResponse<T>> => {
-		return requestInstance.put<ApiResponse<T>>(url, data, config) as any;
+	put: <T = any>(
+		url: string,
+		data?: any,
+		config?: IAxiosRequestConfig,
+	): Promise<ApiResponse<T>> => {
+		return axiosInstance.put<ApiResponse<T>>(url, data, config) as any;
 	},
-	delete: <T = any>(url: string, config?: IAxiosRequestConfig): Promise<ApiResponse<T>> => {
-		return requestInstance.delete<ApiResponse<T>>(url, config) as any;
-	}
-}
+	delete: <T = any>(
+		url: string,
+		config?: IAxiosRequestConfig,
+	): Promise<ApiResponse<T>> => {
+		return axiosInstance.delete<ApiResponse<T>>(url, config) as any;
+	},
+};
 
 export default request;

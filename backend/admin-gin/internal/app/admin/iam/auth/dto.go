@@ -19,3 +19,8 @@ type LoginRes struct {
 	RefreshToken string `json:"refresh_token"` // 刷新令牌
 	ExpiresAt    int64  `json:"expires_at"`    // 过期时间
 }
+
+// swagger:model RefreshReq
+type RefreshReq struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}

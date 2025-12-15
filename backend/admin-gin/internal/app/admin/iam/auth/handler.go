@@ -84,3 +84,6 @@ func (h *Handler) Login(c *gin.Context) {
 // func (h *Handler) Logout(c *gin.Context) {
 
 // }
+
+// refresh token
+func (h *Handler) Refresh(c *gin.Context) {}

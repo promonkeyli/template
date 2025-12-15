@@ -13,6 +13,7 @@ func RegisterRouter(r *gin.Engine, handler *Handler) {
 	{
 		publicGroup.POST("/register", handler.Register)
 		publicGroup.POST("/login", handler.Login)
+		publicGroup.POST("/refresh", handler.Refresh)
 	}
 
 	// 需要鉴权的路由
