@@ -8,6 +8,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+type RedisConfig struct {
+	Addr     string
+	Password string
+	DB       int
+}
+
 // InitRedis 初始化Redis连接
 func InitRedis() (*redis.Client, error) {
 	cfg := config.NewRedisConfig()

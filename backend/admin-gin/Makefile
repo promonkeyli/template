@@ -10,6 +10,9 @@ OPENAPI=./cmd/openapi/main.go
 # wire 依赖注入
 WIRE=./internal/app/admin/wire/wire.go
 
+# 数据库迁移
+MIGRATE= ./cmd/migrate/main.go
+
 # Go 工具安装目录（用于找到 swag 等工具）
 GOBIN=$(shell go env GOPATH)/bin
 
@@ -23,7 +26,7 @@ swag:
 	@echo "生成 API 文档..."
 	@PATH=$(GOBIN):$$PATH go run $(OPENAPI)
 
-# 打包 web 服务
+# web 服务构建
 build:
 	@echo "正在构建..."
 	go build -o bin/$(BINARY_NAME) cmd/server/main.go
@@ -32,3 +35,8 @@ build:
 wire:
 	@echo "正在生成依赖注入..."
 	go generate $(WIRE)
+
+# postgre数据库迁移
+migrate:
+	@echo "postgre数据库迁移..."
+	go run $(MIGRATE)
