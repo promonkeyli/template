@@ -33,13 +33,17 @@ import (
 
 func main() {
 
-	// 初始化 slog 日志
-	logger.Init()
+	// 1. 初始化 Logger
+	logger.Init(logger.Options{
+		Level:  "debug", // 开发环境 debug, 生产环境 info
+		Format: "json",  // 生产环境建议 json
+		Output: os.Stdout,
+	})
 
 	// 读取配置（viper），固定从 ./configs/config.yaml 加载
 	cfg, err := configs.LoadConfig("./configs")
 	if err != nil {
-		logger.Log.Error("读取配置失败", "error", err)
+		// logger.LogError(ctx, "error", err)
 		os.Exit(1)
 	}
 
@@ -49,7 +53,7 @@ func main() {
 		case gin.DebugMode, gin.ReleaseMode, gin.TestMode:
 			gin.SetMode(cfg.Server.Mode)
 		default:
-			logger.Log.Error("非法的 server.mode（仅支持 debug/release/test）", "mode", cfg.Server.Mode)
+			// logger.Log.Error("非法的 server.mode（仅支持 debug/release/test）", "mode", cfg.Server.Mode)
 			os.Exit(1)
 		}
 	}
@@ -57,15 +61,9 @@ func main() {
 	// 使用 Wire 初始化应用（显式传入配置）
 	app, err := wire.InitApp(cfg)
 	if err != nil {
-		logger.Log.Error("应用初始化失败", "error", err)
+		// logger.Log.Error("应用初始化失败", "error", err)
 		os.Exit(1)
 	}
-
-	// 数据库迁移已迁移到 cmd/migrate，不在服务启动时自动执行
-
-	// 修改 Gin 所有日志使用 slog
-	gin.DefaultWriter = logger.Writer()
-	gin.DefaultErrorWriter = logger.Writer()
 
 	// 使用 Wire 创建的 Engine（内部已完成路由注册）
 	r := app.Engine
@@ -74,10 +72,7 @@ func main() {
 	r.SetTrustedProxies(nil)
 
 	// 挂载日志中间件
-	r.Use(middleware.SlogLog())
-
-	// 挂载错误恢复中间件
-	r.Use(middleware.SlogRecovery())
+	r.Use(middleware.Log())
 
 	// 挂载跨域中间件
 	r.Use(middleware.Cors())

@@ -1,7 +1,6 @@
 package http
 
 import (
-	"mall-api/pkg/logger"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -51,13 +50,15 @@ func OKWithPage(c *gin.Context, opt *PageOption) {
 //   - network.Fail(c, &FailOption{Code: network.Failed, Message: "参数错误"})
 //   - network.Fail(c, &FailOption{Code: network.Unauthorized, Message: err.Error()})
 func Fail(c *gin.Context, opt *FailOption) {
-	// 自动记录错误日志
-	logger.Log.Error(opt.Message,
-		"path", c.Request.URL.Path,
-		"method", c.Request.Method,
-		"code", opt.Code,
-		"client_ip", c.ClientIP(),
-	)
+	// ctx := c.Request.Context()
+
+	// slog.Logger()
+	// logger.Log.Error(opt.Message,
+	// 	"path", c.Request.URL.Path,
+	// 	"method", c.Request.Method,
+	// 	"code", opt.Code,
+	// 	"client_ip", c.ClientIP(),
+	// )
 
 	c.JSON(http.StatusOK, NewResponse(opt.Code, opt.Message, nil))
 }

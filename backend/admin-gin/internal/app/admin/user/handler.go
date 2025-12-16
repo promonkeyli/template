@@ -32,7 +32,7 @@ func mapServiceErrorCode(err error) pkghttp.Code {
 // @Tags			AdminUser
 // @Accept			json
 // @Produce		json
-// @Param			page	query		int		false	"页码"		minimum(1)
+// @Param			page	query		int		false	"页码"	minimum(1)
 // @Param			size	query		int		false	"每页数量"	minimum(1)	maximum(100)
 // @Param			role	query		string	false	"角色"
 // @Param			keyword	query		string	false	"关键字(uid/username/email)"

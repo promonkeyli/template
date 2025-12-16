@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"mall-api/pkg/logger"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -37,6 +36,6 @@ func NewPostgre(c *PostgreConfig) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger.Log.Info("PostgreSQL 数据库连接成功！")
+	// logger.Log.Info("PostgreSQL 数据库连接成功！")
 	return db, nil
 }

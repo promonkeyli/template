@@ -3,21 +3,18 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"os"
 	"time"
 
 	"mall-api/configs"
 	"mall-api/pkg/database"
-	"mall-api/pkg/logger"
 
 	// 这里导入的是你真实的业务模型包（当前文件原来导入的是 os/user，是错误的）
 	"mall-api/internal/app/admin/user"
 )
 
 func main() {
-	// 初始化 slog 日志（保证 logger.Log 可用）
-	logger.Init()
-
 	var (
 		dryRun  bool
 		timeout time.Duration
@@ -30,21 +27,21 @@ func main() {
 	// 读取 config.yaml（viper），固定路径：./configs
 	cfg, err := configs.LoadConfig("./configs")
 	if err != nil {
-		logger.Log.Error("读取配置失败", "error", err)
+		slog.Error("读取配置失败", "error", err.Error())
 		os.Exit(1)
 	}
 
-	logger.Log.Info("开始执行数据库迁移...", "dryRun", dryRun, "timeout", timeout.String(), "configPath", "./configs")
+	slog.Info("开始执行数据库迁移...", "dryRun", dryRun, "timeout", timeout.String(), "configPath", "./configs")
 
 	pgCfg, err := database.ProvidePostgreConfig(cfg)
 	if err != nil {
-		logger.Log.Error("解析数据库配置失败", "error", err)
+		slog.Error("解析数据库配置失败", "error", err.Error())
 		os.Exit(1)
 	}
 
 	db, err := database.NewPostgre(pgCfg)
 	if err != nil {
-		logger.Log.Error("数据库连接失败", "error", err)
+		slog.Error("数据库连接失败", "error", err.Error())
 		os.Exit(1)
 	}
 
@@ -52,9 +49,9 @@ func main() {
 	if err := db.AutoMigrate(
 		&user.User{},
 	); err != nil {
-		logger.Log.Error("数据库迁移失败", "error", err)
+		slog.Error("数据库迁移失败", "error", err.Error())
 		os.Exit(1)
 	}
 
-	logger.Log.Info("数据库迁移完成")
+	slog.Info("数据库迁移完成")
 }

@@ -95,7 +95,7 @@ func (s *service) Create(ctx context.Context, req *CreateReq) error {
 		}
 	}
 
-	uid := util.MewUUID()
+	uid := util.NewUUID()
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"mall-api/pkg/logger"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -9,12 +9,10 @@ import (
 )
 
 func main() {
-	// 初始化 slog 日志
-	logger.Init()
 
 	// 执行 swag fmt 命令
 	if err := runCommand("swag", "fmt"); err != nil {
-		logger.Log.Error(err.Error())
+		slog.Error(err.Error())
 		return
 	}
 
@@ -25,7 +23,7 @@ func main() {
 	// 扫描 internal/app 下的所有子目录
 	appModules, err := scanAppModules("./internal/app")
 	if err != nil {
-		logger.Log.Error("扫描模块目录失败: " + err.Error())
+		slog.Error("扫描模块目录失败: " + err.Error())
 		return
 	}
 	dirs = append(dirs, appModules...)
@@ -35,10 +33,10 @@ func main() {
 
 	dir := strings.Join(dirs, ",")
 	if err := runCommand("swag", "init", "--dir", dir, "-o", "./api/openapi"); err != nil {
-		logger.Log.Error(err.Error())
+		slog.Error(err.Error())
 		return
 	}
-	logger.Log.Info("swagger文档生成成功！")
+	slog.Info("swagger文档生成成功！")
 
 }
 
@@ -67,6 +65,6 @@ func runCommand(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
 	// 获取命令的标准输出和标准错误
 	output, err := cmd.CombinedOutput()
-	logger.Log.Debug(string(output))
+	slog.Debug(string(output))
 	return err
 }

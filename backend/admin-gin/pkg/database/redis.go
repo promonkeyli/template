@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"mall-api/pkg/logger"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -28,6 +27,6 @@ func NewRedis(c *RedisConfig) (*redis.Client, error) {
 		return nil, err
 	}
 
-	logger.Log.Info("Redis 连接成功！")
+	// logger.Log.Info("Redis 连接成功！")
 	return rdb, nil
 }

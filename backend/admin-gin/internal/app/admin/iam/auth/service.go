@@ -35,7 +35,7 @@ func (s *service) Register(req *RegisterReq) error {
 	}
 
 	// 2. 生成全局唯一 UID
-	uid := util.MewUUID()
+	uid := util.NewUUID()
 
 	// 3. 加密密码（bcrypt hash）
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
