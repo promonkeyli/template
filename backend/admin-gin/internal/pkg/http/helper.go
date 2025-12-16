@@ -1,7 +1,7 @@
 package http
 
 import (
-	"mall-api/internal/logger"
+	"mall-api/pkg/logger"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

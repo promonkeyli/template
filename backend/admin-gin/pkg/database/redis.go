@@ -2,8 +2,7 @@ package database
 
 import (
 	"context"
-	"mall-api/internal/config"
-	"mall-api/internal/logger"
+	"mall-api/pkg/logger"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -14,14 +13,12 @@ type RedisConfig struct {
 	DB       int
 }
 
-// InitRedis 初始化Redis连接
-func InitRedis() (*redis.Client, error) {
-	cfg := config.NewRedisConfig()
+func NewRedis(c *RedisConfig) (*redis.Client, error) {
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     cfg.Addr,
-		Password: cfg.Password,
-		DB:       cfg.DB,
+		Addr:     c.Addr,
+		Password: c.Password,
+		DB:       c.DB,
 	})
 
 	// 测试连接

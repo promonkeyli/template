@@ -1,11 +1,11 @@
-package mw
+package middleware
 
 import (
 	"log/slog"
 	"net/http"
 	"runtime/debug"
 
-	"mall-api/internal/logger"
+	"mall-api/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )

@@ -21,10 +21,12 @@
 package main
 
 import (
-	"mall-api/internal/database"
-	"mall-api/internal/logger"
-	"mall-api/internal/pkg/mw"
+	"os"
+
+	"mall-api/configs"
+	"mall-api/internal/pkg/middleware"
 	"mall-api/internal/wire"
+	"mall-api/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -34,18 +36,32 @@ func main() {
 	// 初始化 slog 日志
 	logger.Init()
 
-	// 使用 Wire 初始化应用（DB/Redis/Router Wiring）
-	app, err := wire.InitApp()
+	// 读取配置（viper），固定从 ./configs/config.yaml 加载
+	cfg, err := configs.LoadConfig("./configs")
 	if err != nil {
-		logger.Log.Error("应用初始化失败", "error", err)
-		return
+		logger.Log.Error("读取配置失败", "error", err)
+		os.Exit(1)
 	}
 
-	// 数据库自动迁移
-	if err := database.InitAutoMigrate(app.DB); err != nil {
-		logger.Log.Error("数据库迁移失败", "error", err)
-		return
+	// 设置 gin mode：支持 debug / release / test（与 gin 内置一致）
+	if cfg.Server.Mode != "" {
+		switch cfg.Server.Mode {
+		case gin.DebugMode, gin.ReleaseMode, gin.TestMode:
+			gin.SetMode(cfg.Server.Mode)
+		default:
+			logger.Log.Error("非法的 server.mode（仅支持 debug/release/test）", "mode", cfg.Server.Mode)
+			os.Exit(1)
+		}
 	}
+
+	// 使用 Wire 初始化应用（显式传入配置）
+	app, err := wire.InitApp(cfg)
+	if err != nil {
+		logger.Log.Error("应用初始化失败", "error", err)
+		os.Exit(1)
+	}
+
+	// 数据库迁移已迁移到 cmd/migrate，不在服务启动时自动执行
 
 	// 修改 Gin 所有日志使用 slog
 	gin.DefaultWriter = logger.Writer()
@@ -58,13 +74,13 @@ func main() {
 	r.SetTrustedProxies(nil)
 
 	// 挂载日志中间件
-	r.Use(mw.SlogLog())
+	r.Use(middleware.SlogLog())
 
 	// 挂载错误恢复中间件
-	r.Use(mw.SlogRecovery())
+	r.Use(middleware.SlogRecovery())
 
 	// 挂载跨域中间件
-	r.Use(mw.Cors())
+	r.Use(middleware.Cors())
 
 	// 启动服务
 	r.Run(":8081")

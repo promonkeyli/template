@@ -1,4 +1,4 @@
-package mw
+package middleware
 
 import (
 	"mall-api/internal/pkg/http"

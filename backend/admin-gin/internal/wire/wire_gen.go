@@ -7,12 +7,14 @@
 package wire
 
 import (
+	"mall-api/configs"
+	"mall-api/internal/app/admin/wire"
+	"mall-api/internal/router"
+	"mall-api/pkg/database"
+
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
-	"mall-api/internal/app/admin/wire"
-	"mall-api/internal/database"
-	"mall-api/internal/router"
 )
 
 // Injectors from wire.go:
@@ -20,14 +22,23 @@ import (
 // InitApp builds the full application graph: DB, Redis, Gin Engine, module handlers,
 // and routes registration.
 //
-// This injector lets you remove manual DB/Redis/router wiring from cmd/server.
-func InitApp() (*App, error) {
+// Best practice: config is loaded in cmd/* (via viper) and passed in explicitly,
+// so the injector has no filesystem/env side-effects.
+func InitApp(cfg *configs.Config) (*App, error) {
 	engine := provideGinEngine()
-	db, err := database.InitDB()
+	postgreConfig, err := database.ProvidePostgreConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
-	client, err := database.InitRedis()
+	db, err := database.NewPostgre(postgreConfig)
+	if err != nil {
+		return nil, err
+	}
+	redisConfig, err := database.ProvideRedisConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	client, err := database.NewRedis(redisConfig)
 	if err != nil {
 		return nil, err
 	}

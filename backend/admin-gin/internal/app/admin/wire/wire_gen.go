@@ -7,11 +7,12 @@
 package wire
 
 import (
+	"mall-api/internal/app/admin/iam/auth"
+	"mall-api/internal/app/admin/user"
+
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
-	"mall-api/internal/app/admin/iam/auth"
-	"mall-api/internal/app/admin/user"
 )
 
 // Injectors from wire.go:
@@ -19,7 +20,7 @@ import (
 // InitAdminHandlers wires up all admin handlers.
 // Keep db/rdb provided by your bootstrap layer; wire only builds module graph.
 func InitAdminHandlers(db *gorm.DB, rdb *redis.Client) (*AdminHandlers, error) {
-	repository := auth.NewRepository(db)
+	repository := auth.NewRepository(db, rdb)
 	service := auth.NewService(repository)
 	handler := auth.NewHandler(service)
 	userRepository := user.NewRepository(db)

@@ -1,7 +1,7 @@
 package user
 
 import (
-	"mall-api/internal/pkg/mw"
+	"mall-api/internal/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,7 +9,7 @@ import (
 func RegisterRouter(r *gin.Engine, handler *Handler) {
 
 	userGroup := r.Group("/admin/user")
-	userGroup.Use(mw.JWT())
+	userGroup.Use(middleware.JWT())
 	{
 		// user 列表
 		userGroup.GET("", handler.List)

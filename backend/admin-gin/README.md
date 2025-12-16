@@ -58,7 +58,7 @@ mall-api/
 │   │   └── wire_gen.go                   # 生成文件
 │   └── pkg/
 │       ├── http/                         # 统一响应、分页请求
-│       └── mw/                           # JWT / cors / log / recover
+│       └── middleware/                   # JWT / cors / log / recover
 └── api/
     └── openapi/                          # swaggo 生成的 swagger 文档输出目录
 ```

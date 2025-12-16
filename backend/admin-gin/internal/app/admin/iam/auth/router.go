@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"mall-api/internal/pkg/mw"
+	"mall-api/internal/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +18,7 @@ func RegisterRouter(r *gin.Engine, handler *Handler) {
 
 	// 需要鉴权的路由
 	authGroup := r.Group("/admin/auth")
-	authGroup.Use(mw.JWT())
+	authGroup.Use(middleware.JWT())
 	{
 		// authGroup.POST("/logout", handler.Logout)
 	}

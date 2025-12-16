@@ -1,8 +1,8 @@
-package mw
+package middleware
 
 import (
 	"log/slog"
-	"mall-api/internal/logger"
+	"mall-api/pkg/logger"
 	"time"
 
 	"github.com/gin-gonic/gin"

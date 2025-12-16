@@ -1,7 +1,7 @@
 package main
 
 import (
-	"mall-api/internal/logger"
+	"mall-api/pkg/logger"
 	"os"
 	"os/exec"
 	"path/filepath"
