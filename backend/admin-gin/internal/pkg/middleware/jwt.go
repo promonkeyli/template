@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"mall-api/internal/pkg/http"
-	"mall-api/internal/pkg/util"
+	"mall-api/internal/pkg/jwt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -36,10 +36,10 @@ func JWT() gin.HandlerFunc {
 		tokenString = tokenString[7:]
 
 		// 使用封装好的ValidateToken函数验证access token
-		claims, err := util.ValidateToken(tokenString)
+		claims, err := jwt.ValidateToken(tokenString)
 		if err != nil {
 			// 区分token过期和其他错误
-			if err == util.ErrExpiredToken {
+			if err == jwt.ErrExpiredToken {
 				http.Fail(c, &http.FailOption{
 					Code:    http.TokenExpired,
 					Message: "令牌已过期",

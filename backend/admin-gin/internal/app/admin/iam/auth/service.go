@@ -3,7 +3,8 @@ package auth
 import (
 	"context"
 	"errors"
-	"mall-api/internal/pkg/util"
+	"mall-api/internal/pkg/jwt"
+	"mall-api/internal/pkg/uuid"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -35,7 +36,7 @@ func (s *service) Register(req *RegisterReq) error {
 	}
 
 	// 2. 生成全局唯一 UID
-	uid := util.NewUUID()
+	uid := uuid.NewUUID()
 
 	// 3. 加密密码（bcrypt hash）
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -71,7 +72,7 @@ func (s *service) Login(req *LoginReq) (LoginRes, error) {
 	}
 
 	// 3. 构建 token
-	tokenPair, err := util.GenerateTokenPair(account.UID)
+	tokenPair, err := jwt.GenerateTokenPair(account.UID)
 	if err != nil {
 		return LoginRes{}, err
 	}
@@ -87,7 +88,7 @@ func (s *service) Login(req *LoginReq) (LoginRes, error) {
 func (s *service) Refresh(ctx context.Context, req *RefreshReq) (*LoginRes, error) {
 
 	// 1. 解析 refresh_token，静态校验
-	claims, err := util.ParseRefreshToken(req.RefreshToken)
+	claims, err := jwt.ParseRefreshToken(req.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +108,7 @@ func (s *service) Refresh(ctx context.Context, req *RefreshReq) (*LoginRes, erro
 	}
 
 	// 5.签发新的token对
-	tokenPair, err3 := util.GenerateTokenPair(uid)
+	tokenPair, err3 := jwt.GenerateTokenPair(uid)
 	if err3 != nil {
 		return nil, err3
 	}

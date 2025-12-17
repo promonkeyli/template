@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"mall-api/internal/pkg/util"
+	"mall-api/internal/pkg/uuid"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -95,7 +95,7 @@ func (s *service) Create(ctx context.Context, req *CreateReq) error {
 		}
 	}
 
-	uid := util.NewUUID()
+	uid := uuid.NewUUID()
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
