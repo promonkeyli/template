@@ -53,8 +53,9 @@ type Redis struct {
 	Password     string `mapstructure:"password"`
 	DB           int    `mapstructure:"db"`
 	PoolSize     int    `mapstructure:"pool_size"`
-	MinIdleConns int    `mapstructure:"min_idle_conns"`
-	DialTimeout  int    `mapstructure:"dial_timeout"` // 秒
+	DialTimeout  int    `mapstructure:"dial_timeout"`
+	ReadTimeout  int    `mapstructure:"read_timeout"`
+	WriteTimeout int    `mapstructure:"write_timeout"`
 }
 
 // JWT 认证配置 (双Token)

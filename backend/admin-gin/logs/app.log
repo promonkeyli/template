@@ -1,3 +1,20 @@
 {"time":"2025-12-17T14:48:36.263994+08:00","level":"ERROR","msg":"failed to connect to `user=young database=admin`:\n\t139.155.143.190:5432 (139.155.143.190): tls error: server refused TLS connection\n\t139.155.143.190:5432 (139.155.143.190): server error: FATAL: unrecognized configuration parameter \"ConnMaxLifetime\" (SQLSTATE 42704)"}
 {"time":"2025-12-17T14:50:57.639645+08:00","level":"ERROR","msg":"failed to connect to `user=young database=admin`:\n\t139.155.143.190:5432 (139.155.143.190): tls error: server refused TLS connection\n\t139.155.143.190:5432 (139.155.143.190): server error: FATAL: unrecognized configuration parameter \"MaxIdleConns\" (SQLSTATE 42704)"}
 {"time":"2025-12-17T14:52:12.529412+08:00","level":"ERROR","msg":"failed to connect to `user=young database=admin`:\n\t139.155.143.190:5432 (139.155.143.190): tls error: server refused TLS connection\n\t139.155.143.190:5432 (139.155.143.190): server error: FATAL: unrecognized configuration parameter \"ConnMaxLifetime\" (SQLSTATE 42704)"}
+{"time":"2025-12-17T16:38:12.668102+08:00","level":"INFO","msg":"[info] Server exiting, Listening and serving HTTP on :8081"}
+{"time":"2025-12-17T16:39:48.527454+08:00","level":"INFO","msg":"[info] Server exiting, Listening and serving HTTP on %s\n","!BADKEY":":8081"}
+{"time":"2025-12-17T16:42:14.698143+08:00","level":"INFO","msg":"[info] Listening and serving HTTP on %s\n","!BADKEY":":8081"}
+{"time":"2025-12-17T16:42:37.176294+08:00","level":"INFO","msg":"[info] Listening and serving HTTP on %s\n","!BADKEY":":8081"}
+{"time":"2025-12-17T16:43:21.414729+08:00","level":"INFO","msg":":8081"}
+{"time":"2025-12-17T16:46:28.202439+08:00","level":"INFO","msg":":8081"}
+{"time":"2025-12-17T16:47:18.721514+08:00","level":"INFO","msg":"121212"}
+{"time":"2025-12-17T16:51:11.87842+08:00","level":"INFO","msg":"121212"}
+time=2025-12-17T16:51:59.512+08:00 level=INFO msg=121212
+{"time":"2025-12-17T16:52:10.065192+08:00","level":"INFO","msg":"121212"}
+{"time":"2025-12-17T16:52:57.441906+08:00","level":"INFO","msg":"Server is running on port","!BADKEY":":8081"}
+{"time":"2025-12-17T16:53:14.177511+08:00","level":"INFO","msg":"Server is running on port","port":":8081"}
+{"time":"2025-12-17T16:55:23.958897+08:00","level":"WARN","msg":"http request warning","method":"POST","path":"","status":404,"latency":83,"client_ip":"127.0.0.1","user_agent":"Apifox/1.0.0 (https://apifox.com)"}
+{"time":"2025-12-17T16:57:19.028949+08:00","level":"WARN","msg":"http request warning","method":"POST","path":"","status":404,"latency":125,"client_ip":"127.0.0.1","user_agent":"Apifox/1.0.0 (https://apifox.com)"}
+{"time":"2025-12-17T16:57:54.023295+08:00","level":"WARN","msg":"http request warning","method":"POST","path":"","status":404,"latency":84,"client_ip":"127.0.0.1","user_agent":"Apifox/1.0.0 (https://apifox.com)"}
+{"time":"2025-12-17T16:58:25.816111+08:00","level":"WARN","msg":"http request warning","method":"POST","path":"","status":404,"latency":41,"client_ip":"127.0.0.1","user_agent":"Apifox/1.0.0 (https://apifox.com)"}
+{"time":"2025-12-17T17:00:26.41957+08:00","level":"WARN","msg":"http request warning","method":"POST","path":"","status":404,"latency":42,"client_ip":"127.0.0.1","user_agent":"Apifox/1.0.0 (https://apifox.com)"}

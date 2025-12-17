@@ -11,12 +11,7 @@ func NewLog(cfg Config) *slog.Logger {
 
 	fileWriter := newWriter(cfg)
 
-	// 开发环境：同时输出到 stdout
-	if cfg.Format == "text" {
-		writer = io.MultiWriter(fileWriter, os.Stdout)
-	} else {
-		writer = fileWriter
-	}
+	writer = io.MultiWriter(fileWriter, os.Stdout)
 
 	opts := &slog.HandlerOptions{
 		Level: parseLevel(cfg.Level),

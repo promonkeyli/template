@@ -21,8 +21,10 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 
 	"mall-api/configs"
 	"mall-api/internal/boot"
@@ -51,6 +53,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	// 4. 启动 web 服务
-	app.Ge.Run(":8081")
+	// 4. 端口打印
+	fmt.Printf("【%s】service is running on port: %d \n\n", strings.ToUpper(cfg.App.Name), cfg.Server.Port)
+
+	// 5. 运行 http 服务
+	app.Se.ListenAndServe()
 }
