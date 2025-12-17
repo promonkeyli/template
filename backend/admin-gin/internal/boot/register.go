@@ -5,20 +5,20 @@ import (
 	"mall-api/internal/app/admin/user"
 
 	"github.com/gin-gonic/gin"
-
+	"github.com/redis/go-redis/v9"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"gorm.io/gorm"
 )
 
-func RegisterRouter(r *gin.Engine, h *Handlers) {
-
-	// openapi 路由
+func Register(r *gin.Engine, db *gorm.DB, rdb *redis.Client) {
+	// openapi routes
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// 管理端路由
+	// admin routes
 	adminGroup := r.Group("/admin")
 	{
-		auth.RegisterRouter(adminGroup, h.Auth)
-		user.RegisterRouter(adminGroup, h.User)
+		auth.Register(adminGroup, db, rdb)
+		user.Register(adminGroup, db)
 	}
 }

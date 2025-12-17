@@ -7,9 +7,6 @@ MAIN=./cmd/server/main.go
 # OpenAPI 文档生成工具入口文件
 OPENAPI=./cmd/openapi/main.go
 
-# wire 依赖注入
-WIRE=./internal/app/wire/wire.go
-
 # 数据库迁移
 MIGRATE= ./cmd/migrate/main.go
 
@@ -30,11 +27,6 @@ swag:
 build:
 	@echo "正在构建..."
 	go build -o bin/$(BINARY_NAME) cmd/server/main.go
-
-# wire 依赖注入
-wire:
-	@echo "正在生成依赖注入..."
-	go generate $(WIRE)
 
 # postgre 数据库迁移
 migrate:

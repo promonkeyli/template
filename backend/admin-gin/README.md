@@ -10,7 +10,7 @@
 *   **数据库**: PostgreSQL
 *   **认证**: JWT (Bearer Token)
 *   **缓存/KV存储**: [go-redis](https://github.com/redis/go-redis) - 官方推荐的 Redis 客户端
-*   **依赖注入**: [google/wire](https://github.com/google/wire) (编译期依赖注入，用于集中装配模块依赖)
+*   **依赖组装**: 手写 Composition Root（模块自组装 + 模块自注册；boot 仅聚合并直接传递 `App` 中的依赖，如 DB/Redis）
 *   **日志**: [log/slog](https://pkg.go.dev/log/slog) - Go 1.21+ 标准库结构化日志
 *   **操作系统/工具**: Linux/macOS
 *   **文档**: Swagger / OpenAPI (通过 `swaggo`)
@@ -23,47 +23,62 @@
 
 ```bash
 mall-api/
+├── .gitignore
+├── Makefile
+├── README.md
+├── go.mod
+├── go.sum
+├── api/
+│   └── openapi/                          # swaggo 生成的 swagger 文档输出目录
 ├── cmd/
+│   ├── migrate/
+│   │   └── main.go
+│   ├── openapi/
+│   │   └── main.go
 │   └── server/
 │       └── main.go
+├── configs/
+├── docs/
+│   └── task.md
 ├── internal/
 │   ├── app/
 │   │   └── admin/
 │   │       ├── iam/
-│   │       │   └── auth/
-│   │       │       ├── dto.go
-│   │       │       ├── handler.go
-│   │       │       ├── model.go          # auth 自己的 Account + GORM 映射模型（与 user 解耦，但共用同表）
-│   │       │       ├── repository.go
-│   │       │       ├── service.go
-│   │       │       └── router.go         # RegisterRouter(r, handler)
-│   │       ├── user/
-│   │       │   ├── constant.go
-│   │       │   ├── dto.go
-│   │       │   ├── handler.go            # user 常用 CRUD + swagger 注释
-│   │       │   ├── model.go
-│   │       │   ├── repository.go
-│   │       │   ├── service.go
-│   │       │   └── router.go             # RegisterRouter(r, handler)
-│   │       └── wire/
-│   │           ├── wire.go               #go:build wireinject（注入器声明）
-│   │           └── wire_gen.go           # 生成文件（默认编译使用）
-│   ├── database/
-│   │   ├── postgre.go                    # InitDB（单数表名 SingularTable=true）
-│   │   └── redis.go                      # InitRedis
-│   ├── router/
-│   │   └── router.go                     # 全局路由入口（admin 路由注册）
-│   ├── wire/
-│   │   ├── wire.go                       #go:build wireinject（全应用注入器声明）
-│   │   └── wire_gen.go                   # 生成文件
+│   │       │   ├── auth/
+│   │       │   │   ├── dto.go
+│   │       │   │   ├── handler.go
+│   │       │   │   ├── model.go
+│   │       │   │   ├── register.go       # Register(rg, db, rdb)：模块自组装并注册路由
+│   │       │   │   ├── repository.go
+│   │       │   │   ├── router.go         # RegisterRouter(rg, handler)
+│   │       │   │   └── service.go
+│   │       │   ├── menu/
+│   │       │   │   └── mdoel.go
+│   │       │   └── role/
+│   │       │       └── model.go
+│   │       └── user/
+│   │           ├── constant.go
+│   │           ├── dto.go
+│   │           ├── handler.go
+│   │           ├── model.go
+│   │           ├── register.go           # Register(rg, db)：模块自组装并注册路由
+│   │           ├── repository.go
+│   │           ├── router.go             # RegisterRouter(rg, handler)
+│   │           └── service.go
+│   ├── boot/
+│   │   ├── app.go                        # NewApp：logger/db/redis/gin/http server 初始化
+│   │   └── register.go                   # Register：composition root，聚合调用各模块 Register(...)，并直接传递 DB/Redis 依赖
 │   └── pkg/
+│       ├── database/
 │       ├── http/                         # 统一响应、分页请求
-│       └── middleware/                   # JWT / cors / log / recover
-└── api/
-    └── openapi/                          # swaggo 生成的 swagger 文档输出目录
+│       ├── jwt/
+│       ├── logger/
+│       ├── middleware/                   # JWT / cors / log / recover
+│       └── uuid/
+└── logs/
 ```
 
-> 说明：`wire.go` 文件带有 `wireinject` build tag，默认会被编辑器/gopls 排除；查看实现请打开对应的 `wire_gen.go`。
+> 说明：本项目采用“模块自组装 + 模块自注册”的方式：每个模块提供 `Register(...)`，在模块内部完成 `repo/service/handler` 的组装；`boot/register.go` 作为 composition root 仅负责聚合调用，并直接把 `App` 内的依赖（如 DB、Redis）传下去。
 
 ## Admin 用户模块（/admin/user）接口
 
