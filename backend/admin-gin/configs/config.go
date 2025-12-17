@@ -1,94 +1,112 @@
+// viper 集中管理配置
 package configs
 
 import (
-	"fmt"
+	"errors"
 	"strings"
-	"sync"
 
 	"github.com/spf13/viper"
 )
 
+// Config 聚合所有配置
 type Config struct {
-	Server   ServerConfig   `mapstructure:"server"`
-	Database DatabaseConfig `mapstructure:"database"`
-	Redis    RedisConfig    `mapstructure:"redis"`
+	App      App      `mapstructure:"app"`
+	Server   Server   `mapstructure:"server"`
+	Database Database `mapstructure:"database"`
+	Redis    Redis    `mapstructure:"redis"`
+	JWT      JWT      `mapstructure:"jwt"`
+	Log      Log      `mapstructure:"log"`
+	CORS     CORS     `mapstructure:"cors"`
 }
 
-type ServerConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
-	Mode string `mapstructure:"mode"`
+// App 应用基础配置
+type App struct {
+	Name    string `mapstructure:"name"`
+	Version string `mapstructure:"version"`
 }
 
-type DatabaseConfig struct {
-	Host     string `mapstructure:"host"`
-	User     string `mapstructure:"user"`
-	Password string `mapstructure:"password"`
-	DBName   string `mapstructure:"dbname"`
-	Port     int    `mapstructure:"port"`
-	TimeZone string `mapstructure:"timezone"`
+// Server HTTP服务配置
+type Server struct {
+	Port         int    `mapstructure:"port"`
+	Mode         string `mapstructure:"mode"`          // debug, release, test
+	ReadTimeout  int    `mapstructure:"read_timeout"`  // 秒
+	WriteTimeout int    `mapstructure:"write_timeout"` // 秒
 }
 
-type RedisConfig struct {
-	Addr     string `mapstructure:"addr"`
-	Password string `mapstructure:"password"`
-	DB       int    `mapstructure:"db"`
+// Database 数据库配置 (PostgreSQL)
+type Database struct {
+	Host            string `mapstructure:"host"`
+	Port            int    `mapstructure:"port"`
+	DBName          string `mapstructure:"dbname"`
+	User            string `mapstructure:"user"`
+	Password        string `mapstructure:"password"`
+	SSLMode         string `mapstructure:"ssl_mode"`
+	TimeZone        string `mapstructure:"timezone"`
+	MaxIdleConns    int    `mapstructure:"max_idle_conns"`
+	MaxOpenConns    int    `mapstructure:"max_open_conns"`
+	ConnMaxLifetime int    `mapstructure:"conn_max_lifetime"` // 秒
 }
 
-var (
-	once     sync.Once
-	global   *Config
-	globalEr error
-)
+// Redis 缓存配置
+type Redis struct {
+	Addr         string `mapstructure:"addr"`
+	Password     string `mapstructure:"password"`
+	DB           int    `mapstructure:"db"`
+	PoolSize     int    `mapstructure:"pool_size"`
+	MinIdleConns int    `mapstructure:"min_idle_conns"`
+	DialTimeout  int    `mapstructure:"dial_timeout"` // 秒
+}
 
-func LoadConfig(path string) (*Config, error) {
+// JWT 认证配置 (双Token)
+type JWT struct {
+	Secret        string `mapstructure:"secret"`
+	Issuer        string `mapstructure:"issuer"`
+	AccessExpire  int64  `mapstructure:"access_expire"`  // 秒
+	RefreshExpire int64  `mapstructure:"refresh_expire"` // 秒
+}
+
+// Log 日志配置
+type Log struct {
+	Level    string `mapstructure:"level"`    // debug, info, warn, error
+	Format   string `mapstructure:"format"`   // json, text
+	Dir      string `mapstructure:"dir"`      // 日志文件夹
+	Filename string `mapstructure:"filename"` // 日志文件名
+	MaxSize  int    `mapstructure:"max_size"` // MB
+	MaxAge   int    `mapstructure:"max_age"`  // 天
+	Compress bool   `mapstructure:"compress"` // 是否压缩
+}
+
+// CORS 跨域配置
+type CORS struct {
+	AllowOrigins []string `mapstructure:"allow_origins"`
+}
+
+// ================================ viper 配置项目初始化 ===================================
+
+func InitConfig(env string) (*Config, error) {
+	// 1. 创建 viper 实例
 	v := viper.New()
 
-	// --- 设置读取路径和文件名 ---
-	v.AddConfigPath(path)
-	v.SetConfigName("config")
-	v.SetConfigType("yaml")
-
-	// --- 环境变量覆盖 ---
-	// 例如：MALL_DATABASE_HOST=127.0.0.1 覆盖 database.host
-	v.SetEnvPrefix("MALL")
-	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	// 2. 环境变量通用设置：db.host -> DB_HOST -> APP_DB_HOST
+	v.SetEnvPrefix("APP")
 	v.AutomaticEnv()
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	// --- 读取配置 ---
-	if err := v.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			return nil, fmt.Errorf("找不到配置文件 config.yml/config.yaml，请检查路径: %s", path)
+	// 3. 开发环境从 yaml 文件中加载配置
+	if env == "dev" {
+		// 开发环境读取yaml文件配置
+		v.SetConfigName("config") // 配置文件名 (不带扩展名)
+		v.SetConfigType("yaml")   // 如果配置文件中没有扩展名，则明确指定
+		v.AddConfigPath("./configs")
+		if err := v.ReadInConfig(); err != nil {
+			return nil, errors.New("读取配置文件失败")
 		}
-		return nil, fmt.Errorf("读取配置文件出错: %v", err)
 	}
 
-	// --- 映射到结构体 ---
-	var c Config
-	if err := v.Unmarshal(&c); err != nil {
-		return nil, fmt.Errorf("配置解析失败(Unmarshal): %v", err)
+	// 映射配置文件 然后返回
+	var cfg Config
+	if err := v.Unmarshal(&cfg); err != nil {
+		return nil, errors.New("配置文件配置有误")
 	}
-
-	return &c, nil
-}
-
-// MustLoadGlobal 初始化全局配置（只会执行一次）。
-// 你可以在程序启动时调用它，然后通过 Get() 获取配置。
-func MustLoadGlobal(path string) {
-	once.Do(func() {
-		global, globalEr = LoadConfig(path)
-	})
-	if globalEr != nil {
-		panic(globalEr)
-	}
-}
-
-// Get 返回全局配置；在调用前请确保已执行 MustLoadGlobal。
-func Get() *Config {
-	return global
-}
-
-// Err 返回全局配置初始化错误（若有）。
-func Err() error {
-	return globalEr
+	return &cfg, nil
 }

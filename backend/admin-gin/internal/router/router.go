@@ -3,17 +3,20 @@ package router
 import (
 	adminAuth "mall-api/internal/app/admin/iam/auth"
 	adminUser "mall-api/internal/app/admin/user"
-	adminWire "mall-api/internal/app/admin/wire"
+	adminWire "mall-api/internal/app/wire"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 )
 
 func Router(r *gin.Engine, d *gorm.DB, rdb *redis.Client) {
 
-	// OpenAPI 路由注册
-	RegisterOpenAPIRouter(r)
+	// openapi 路由
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	handlers, err := adminWire.InitAdminHandlers(d, rdb)
 	if err != nil {

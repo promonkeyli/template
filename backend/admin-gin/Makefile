@@ -8,7 +8,7 @@ MAIN=./cmd/server/main.go
 OPENAPI=./cmd/openapi/main.go
 
 # wire 依赖注入
-WIRE=./internal/app/admin/wire/wire.go
+WIRE=./internal/app/wire/wire.go
 
 # 数据库迁移
 MIGRATE= ./cmd/migrate/main.go
@@ -36,7 +36,7 @@ wire:
 	@echo "正在生成依赖注入..."
 	go generate $(WIRE)
 
-# postgre数据库迁移
+# postgre 数据库迁移
 migrate:
 	@echo "postgre数据库迁移..."
 	go run $(MIGRATE)

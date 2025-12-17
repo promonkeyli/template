@@ -21,6 +21,12 @@ type PostgreConfig struct {
 	Port int
 	// 数据库时区
 	TimeZone string
+	// 最大空闲连接数
+	// MaxIdleConns int
+	// 最大打开连接数
+	// MaxOpenConns int
+	// 连接最大生存时间
+	// ConnMaxLifetime int
 }
 
 func NewPostgre(c *PostgreConfig) (*gorm.DB, error) {
@@ -36,6 +42,5 @@ func NewPostgre(c *PostgreConfig) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	// logger.Log.Info("PostgreSQL 数据库连接成功！")
 	return db, nil
 }

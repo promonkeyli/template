@@ -4,14 +4,7 @@ package main
 import (
 	"flag"
 	"log/slog"
-	"os"
 	"time"
-
-	"mall-api/configs"
-	"mall-api/pkg/database"
-
-	// 这里导入的是你真实的业务模型包（当前文件原来导入的是 os/user，是错误的）
-	"mall-api/internal/app/admin/user"
 )
 
 func main() {
@@ -24,34 +17,28 @@ func main() {
 	flag.DurationVar(&timeout, "timeout", 15*time.Second, "数据库连接与迁移超时时间")
 	flag.Parse()
 
-	// 读取 config.yaml（viper），固定路径：./configs
-	cfg, err := configs.LoadConfig("./configs")
-	if err != nil {
-		slog.Error("读取配置失败", "error", err.Error())
-		os.Exit(1)
-	}
-
 	slog.Info("开始执行数据库迁移...", "dryRun", dryRun, "timeout", timeout.String(), "configPath", "./configs")
 
-	pgCfg, err := database.ProvidePostgreConfig(cfg)
-	if err != nil {
-		slog.Error("解析数据库配置失败", "error", err.Error())
-		os.Exit(1)
-	}
+	// 	pgCfg, err := database.ProvidePostgreConfig(cfg)
+	// 	if err != nil {
+	// 		slog.Error("解析数据库配置失败", "error", err.Error())
+	// 		os.Exit(1)
+	// 	}
 
-	db, err := database.NewPostgre(pgCfg)
-	if err != nil {
-		slog.Error("数据库连接失败", "error", err.Error())
-		os.Exit(1)
-	}
+	// 	db, err := database.NewPostgre(pgCfg)
+	// 	if err != nil {
+	// 		slog.Error("数据库连接失败", "error", err.Error())
+	// 		os.Exit(1)
+	// 	}
 
-	// 在这里注册需要迁移的模型
-	if err := db.AutoMigrate(
-		&user.User{},
-	); err != nil {
-		slog.Error("数据库迁移失败", "error", err.Error())
-		os.Exit(1)
-	}
+	// 	// 在这里注册需要迁移的模型
+	// 	if err := db.AutoMigrate(
+	// 		&user.User{},
+	// 	); err != nil {
+	// 		slog.Error("数据库迁移失败", "error", err.Error())
+	// 		os.Exit(1)
+	// 	}
 
-	slog.Info("数据库迁移完成")
+	//		slog.Info("数据库迁移完成")
+	//	}
 }

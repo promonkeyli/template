@@ -12,38 +12,128 @@ definitions:
     - password
     - username
     type: object
-  network.Code:
+  http.Code:
     enum:
-    - 0
-    - 2000
-    - 2001
-    - 2002
+    - 200
+    - 400
+    - 422
+    - 401
+    - 403
+    - 404
+    - 409
+    - 409
+    - 500
+    - 501
+    - 401
+    - 401
+    - 500
     type: integer
     x-enum-comments:
-      Failed: 失败
+      AlreadyExists: 资源已存在（唯一键冲突等，与 Conflict 同值）
+      Conflict: 资源冲突（状态冲突/并发更新冲突等）
+      Forbidden: 已登录但无权限
+      InternalError: 服务内部错误（兜底）
+      InvalidParam: 参数错误（解析/缺失/类型不符）
       NotFound: 资源不存在
-      Success: 成功
-      Unauthorized: 未授权
+      NotImplemented: 功能未实现
+      Unauthorized: 未登录/缺少 token/鉴权失败
+      ValidationFail: 参数校验失败（binding/validator）
     x-enum-descriptions:
-    - 成功
-    - 失败
-    - 未授权
+    - ""
+    - 参数错误（解析/缺失/类型不符）
+    - 参数校验失败（binding/validator）
+    - 未登录/缺少 token/鉴权失败
+    - 已登录但无权限
     - 资源不存在
+    - 资源冲突（状态冲突/并发更新冲突等）
+    - 资源已存在（唯一键冲突等，与 Conflict 同值）
+    - 服务内部错误（兜底）
+    - 功能未实现
+    - ""
+    - ""
+    - ""
     x-enum-varnames:
     - Success
-    - Failed
+    - InvalidParam
+    - ValidationFail
     - Unauthorized
+    - Forbidden
     - NotFound
-  network.HttpResponse:
+    - Conflict
+    - AlreadyExists
+    - InternalError
+    - NotImplemented
+    - TokenExpired
+    - TokenInvalid
+    - Failed
+  http.HttpPageResponse:
     properties:
       code:
         allOf:
-        - $ref: '#/definitions/network.Code'
+        - $ref: '#/definitions/http.Code'
         description: 业务状态码
       data:
         description: 响应数据(可以为空)
       message:
         description: 响应描述
+        type: string
+      page:
+        description: 响应分页页码
+        type: integer
+      size:
+        description: 响应分页大小
+        type: integer
+      total:
+        description: 响应分页总条数
+        type: integer
+    type: object
+  http.HttpResponse:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/http.Code'
+        description: 业务状态码
+      data:
+        description: 响应数据(可以为空)
+      message:
+        description: 响应描述
+        type: string
+    type: object
+  user.CreateReq:
+    properties:
+      email:
+        description: 选填，但如果有值必须符合邮箱格式
+        type: string
+      password:
+        description: 必填，创建时传入明文密码
+        maxLength: 32
+        minLength: 6
+        type: string
+      role:
+        description: 角色：不要写死 oneof，使用 user.Role(req.Role).IsValid() 统一校验（在 handler/service
+          层做）
+        type: string
+      username:
+        description: 必填，且通常有长度限制
+        maxLength: 64
+        minLength: 3
+        type: string
+    required:
+    - password
+    - role
+    - username
+    type: object
+  user.UpdateReq:
+    properties:
+      email:
+        description: 允许修改邮箱
+        type: string
+      is_active:
+        description: 使用指针，以便区分 "不修改" 和 "修改为禁用(false)"
+        type: boolean
+      role:
+        description: 允许修改角色：不要写死 oneof，使用 user.Role(req.Role).IsValid() 统一校验（在 handler/service
+          层做）
         type: string
     type: object
 host: localhost:8081
@@ -78,14 +168,125 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/network.HttpResponse'
+            $ref: '#/definitions/http.HttpResponse'
         "400":
           description: 参数错误
           schema:
-            $ref: '#/definitions/network.HttpResponse'
+            $ref: '#/definitions/http.HttpResponse'
       summary: 用户注册
       tags:
       - Auth
+  /admin/user:
+    get:
+      consumes:
+      - application/json
+      description: 分页获取后台用户列表，支持按角色与关键字筛选（keyword 可匹配 uid/username/email）
+      parameters:
+      - description: 页码
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        type: integer
+      - description: 角色
+        in: query
+        name: role
+        type: string
+      - description: 关键字(uid/username/email)
+        in: query
+        name: keyword
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HttpResponse'
+      security:
+      - BearerAuth: []
+      summary: 管理员-用户列表
+      tags:
+      - AdminUser
+    post:
+      consumes:
+      - application/json
+      description: 创建后台用户（密码会在服务层进行 bcrypt 加密）
+      parameters:
+      - description: 创建用户请求
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/user.CreateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HttpResponse'
+      security:
+      - BearerAuth: []
+      summary: 管理员-创建用户
+      tags:
+      - AdminUser
+  /admin/user/{uid}:
+    delete:
+      consumes:
+      - application/json
+      description: 按 UID 删除后台用户（建议实现为软删除：is_deleted=true）
+      parameters:
+      - description: 用户 UID
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HttpResponse'
+      security:
+      - BearerAuth: []
+      summary: 管理员-删除用户
+      tags:
+      - AdminUser
+    put:
+      consumes:
+      - application/json
+      description: 按 UID 更新后台用户（邮箱/角色/启用状态）
+      parameters:
+      - description: 用户 UID
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: 更新用户请求
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HttpResponse'
+      security:
+      - BearerAuth: []
+      summary: 管理员-更新用户
+      tags:
+      - AdminUser
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.

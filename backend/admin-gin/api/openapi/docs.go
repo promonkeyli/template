@@ -52,13 +52,188 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/network.HttpResponse"
+                            "$ref": "#/definitions/http.HttpResponse"
                         }
                     },
                     "400": {
                         "description": "参数错误",
                         "schema": {
-                            "$ref": "#/definitions/network.HttpResponse"
+                            "$ref": "#/definitions/http.HttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/user": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "分页获取后台用户列表，支持按角色与关键字筛选（keyword 可匹配 uid/username/email）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AdminUser"
+                ],
+                "summary": "管理员-用户列表",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "角色",
+                        "name": "role",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关键字(uid/username/email)",
+                        "name": "keyword",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.HttpResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建后台用户（密码会在服务层进行 bcrypt 加密）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AdminUser"
+                ],
+                "summary": "管理员-创建用户",
+                "parameters": [
+                    {
+                        "description": "创建用户请求",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.CreateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.HttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/user/{uid}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按 UID 更新后台用户（邮箱/角色/启用状态）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AdminUser"
+                ],
+                "summary": "管理员-更新用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户 UID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新用户请求",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.UpdateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.HttpResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按 UID 删除后台用户（建议实现为软删除：is_deleted=true）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AdminUser"
+                ],
+                "summary": "管理员-删除用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户 UID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.HttpResponse"
                         }
                     }
                 }
@@ -83,41 +258,73 @@ const docTemplate = `{
                 }
             }
         },
-        "network.Code": {
+        "http.Code": {
             "type": "integer",
             "enum": [
-                0,
-                2000,
-                2001,
-                2002
+                200,
+                400,
+                422,
+                401,
+                403,
+                404,
+                409,
+                409,
+                500,
+                501,
+                401,
+                401,
+                500
             ],
             "x-enum-comments": {
-                "Failed": "失败",
+                "AlreadyExists": "资源已存在（唯一键冲突等，与 Conflict 同值）",
+                "Conflict": "资源冲突（状态冲突/并发更新冲突等）",
+                "Forbidden": "已登录但无权限",
+                "InternalError": "服务内部错误（兜底）",
+                "InvalidParam": "参数错误（解析/缺失/类型不符）",
                 "NotFound": "资源不存在",
-                "Success": "成功",
-                "Unauthorized": "未授权"
+                "NotImplemented": "功能未实现",
+                "Unauthorized": "未登录/缺少 token/鉴权失败",
+                "ValidationFail": "参数校验失败（binding/validator）"
             },
             "x-enum-descriptions": [
-                "成功",
-                "失败",
-                "未授权",
-                "资源不存在"
+                "",
+                "参数错误（解析/缺失/类型不符）",
+                "参数校验失败（binding/validator）",
+                "未登录/缺少 token/鉴权失败",
+                "已登录但无权限",
+                "资源不存在",
+                "资源冲突（状态冲突/并发更新冲突等）",
+                "资源已存在（唯一键冲突等，与 Conflict 同值）",
+                "服务内部错误（兜底）",
+                "功能未实现",
+                "",
+                "",
+                ""
             ],
             "x-enum-varnames": [
                 "Success",
-                "Failed",
+                "InvalidParam",
+                "ValidationFail",
                 "Unauthorized",
-                "NotFound"
+                "Forbidden",
+                "NotFound",
+                "Conflict",
+                "AlreadyExists",
+                "InternalError",
+                "NotImplemented",
+                "TokenExpired",
+                "TokenInvalid",
+                "Failed"
             ]
         },
-        "network.HttpResponse": {
+        "http.HttpPageResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "description": "业务状态码",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/network.Code"
+                            "$ref": "#/definitions/http.Code"
                         }
                     ]
                 },
@@ -126,6 +333,85 @@ const docTemplate = `{
                 },
                 "message": {
                     "description": "响应描述",
+                    "type": "string"
+                },
+                "page": {
+                    "description": "响应分页页码",
+                    "type": "integer"
+                },
+                "size": {
+                    "description": "响应分页大小",
+                    "type": "integer"
+                },
+                "total": {
+                    "description": "响应分页总条数",
+                    "type": "integer"
+                }
+            }
+        },
+        "http.HttpResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "业务状态码",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/http.Code"
+                        }
+                    ]
+                },
+                "data": {
+                    "description": "响应数据(可以为空)"
+                },
+                "message": {
+                    "description": "响应描述",
+                    "type": "string"
+                }
+            }
+        },
+        "user.CreateReq": {
+            "type": "object",
+            "required": [
+                "password",
+                "role",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "description": "选填，但如果有值必须符合邮箱格式",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "必填，创建时传入明文密码",
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 6
+                },
+                "role": {
+                    "description": "角色：不要写死 oneof，使用 user.Role(req.Role).IsValid() 统一校验（在 handler/service 层做）",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "必填，且通常有长度限制",
+                    "type": "string",
+                    "maxLength": 64,
+                    "minLength": 3
+                }
+            }
+        },
+        "user.UpdateReq": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "description": "允许修改邮箱",
+                    "type": "string"
+                },
+                "is_active": {
+                    "description": "使用指针，以便区分 \"不修改\" 和 \"修改为禁用(false)\"",
+                    "type": "boolean"
+                },
+                "role": {
+                    "description": "允许修改角色：不要写死 oneof，使用 user.Role(req.Role).IsValid() 统一校验（在 handler/service 层做）",
                     "type": "string"
                 }
             }

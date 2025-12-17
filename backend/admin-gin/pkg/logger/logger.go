@@ -1,37 +1,37 @@
 package logger
 
 import (
+	"io"
 	"log/slog"
 	"os"
 )
 
-var baseLogger *slog.Logger
+func NewLog(cfg Config) *slog.Logger {
+	var writer io.Writer
 
-// Init 初始化全局 logger（只调用一次）
-func Init(cfg Config) {
+	fileWriter := newWriter(cfg)
+
+	// 开发环境：同时输出到 stdout
+	if cfg.Format == "text" {
+		writer = io.MultiWriter(fileWriter, os.Stdout)
+	} else {
+		writer = fileWriter
+	}
+
 	opts := &slog.HandlerOptions{
-		Level: cfg.Level,
+		Level: parseLevel(cfg.Level),
 	}
 
 	var handler slog.Handler
-	if cfg.Env == "dev" {
-		handler = slog.NewTextHandler(os.Stdout, opts)
-	} else {
-		handler = slog.NewJSONHandler(os.Stdout, opts)
+	switch cfg.Format {
+	case "json":
+		handler = slog.NewJSONHandler(writer, opts)
+	default:
+		handler = slog.NewTextHandler(writer, opts)
 	}
 
-	baseLogger = slog.New(handler).With(
-		"service", cfg.Service,
-		"env", cfg.Env,
-	)
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
 
-	slog.SetDefault(baseLogger)
-}
-
-// Default 返回全局 logger
-func Default() *slog.Logger {
-	if baseLogger == nil {
-		return slog.Default()
-	}
-	return baseLogger
+	return logger
 }

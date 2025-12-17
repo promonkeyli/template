@@ -29,7 +29,7 @@ func main() {
 	dirs = append(dirs, appModules...)
 
 	// 添加其他需要扫描的目录
-	dirs = append(dirs, "./internal/pkg/network")
+	dirs = append(dirs, "./internal/pkg/http")
 
 	dir := strings.Join(dirs, ",")
 	if err := runCommand("swag", "init", "--dir", dir, "-o", "./api/openapi"); err != nil {

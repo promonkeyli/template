@@ -27,6 +27,5 @@ func NewRedis(c *RedisConfig) (*redis.Client, error) {
 		return nil, err
 	}
 
-	// logger.Log.Info("Redis 连接成功！")
 	return rdb, nil
 }

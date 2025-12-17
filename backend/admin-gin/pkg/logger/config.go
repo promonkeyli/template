@@ -1,9 +1,11 @@
 package logger
 
-import "log/slog"
-
 type Config struct {
-	Service string
-	Env     string // dev / test / prod
-	Level   slog.Level
+	Level    string `mapstructure:"level"`
+	Format   string `mapstructure:"format"`
+	Dir      string `mapstructure:"director"`
+	Filename string `mapstructure:"filename"`
+	MaxSize  int    `mapstructure:"max_size"`
+	MaxAge   int    `mapstructure:"max_age"`
+	Compress bool   `mapstructure:"compress"`
 }

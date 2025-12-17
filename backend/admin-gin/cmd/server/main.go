@@ -25,72 +25,32 @@ import (
 	"os"
 
 	"mall-api/configs"
-	"mall-api/internal/pkg/middleware"
-	"mall-api/internal/wire"
-	"mall-api/pkg/logger"
-
-	"github.com/gin-gonic/gin"
+	"mall-api/internal/boot"
 )
-
-// 初始化 slog 日志时，根据 gin mode 映射 日志级别
-func InitLoggerFromGin(service string) {
-	env := "prod"
-	level := slog.LevelInfo
-
-	if gin.Mode() == gin.DebugMode {
-		env = "dev"
-		level = slog.LevelDebug
-	}
-
-	logger.Init(logger.Config{
-		Service: service,
-		Env:     env,
-		Level:   level,
-	})
-}
 
 func main() {
 
-	// 1. 初始化 Logger
-	InitLoggerFromGin("mall-api")
+	// 1.从环境变量获取运行模式
+	runMode := os.Getenv("APP_ENV_MODE")
+	env := "dev"
+	if runMode != "" {
+		env = runMode
+	}
 
-	// 读取配置（viper），固定从 ./configs/config.yaml 加载
-	cfg, err := configs.LoadConfig("./configs")
+	// 2. 依据环境变量初始化系统配置
+	cfg, err := configs.InitConfig(env)
 	if err != nil {
-		// logger.LogError(ctx, "error", err)
+		slog.Error(err.Error())
 		os.Exit(1)
 	}
 
-	// 设置 gin mode：支持 debug / release / test（与 gin 内置一致）
-	if cfg.Server.Mode != "" {
-		switch cfg.Server.Mode {
-		case gin.DebugMode, gin.ReleaseMode, gin.TestMode:
-			gin.SetMode(cfg.Server.Mode)
-		default:
-			// logger.Log.Error("非法的 server.mode（仅支持 debug/release/test）", "mode", cfg.Server.Mode)
-			os.Exit(1)
-		}
-	}
-
-	// 使用 Wire 初始化应用（显式传入配置）
-	app, err := wire.InitApp(cfg)
-	if err != nil {
-		// logger.Log.Error("应用初始化失败", "error", err)
+	// 3. 构造应用
+	app, appErr := boot.NewApp(cfg)
+	if appErr != nil {
+		slog.Error(appErr.Error())
 		os.Exit(1)
 	}
 
-	// 使用 Wire 创建的 Engine（内部已完成路由注册）
-	r := app.Engine
-
-	// 移除该警告：[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
-	r.SetTrustedProxies(nil)
-
-	// 挂载日志中间件
-	r.Use(middleware.Slog())
-
-	// 挂载跨域中间件
-	r.Use(middleware.Cors())
-
-	// 启动服务
-	r.Run(":8081")
+	// 4. 启动 web 服务
+	app.Ge.Run(":8081")
 }

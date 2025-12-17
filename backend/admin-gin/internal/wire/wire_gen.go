@@ -8,7 +8,7 @@ package wire
 
 import (
 	"mall-api/configs"
-	"mall-api/internal/app/admin/wire"
+	"mall-api/internal/app/wire"
 	"mall-api/internal/router"
 	"mall-api/pkg/database"
 
