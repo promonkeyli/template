@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 	"mall-api/configs"
+	"mall-api/internal/pkg/database"
+	"mall-api/internal/pkg/logger"
 	"mall-api/internal/pkg/middleware"
-	"mall-api/pkg/database"
-	"mall-api/pkg/logger"
 	"net/http"
 	"time"
 
