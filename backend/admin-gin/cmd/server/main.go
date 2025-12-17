@@ -21,6 +21,7 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 
 	"mall-api/configs"
@@ -31,14 +32,27 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// 初始化 slog 日志时，根据 gin mode 映射 日志级别
+func InitLoggerFromGin(service string) {
+	env := "prod"
+	level := slog.LevelInfo
+
+	if gin.Mode() == gin.DebugMode {
+		env = "dev"
+		level = slog.LevelDebug
+	}
+
+	logger.Init(logger.Config{
+		Service: service,
+		Env:     env,
+		Level:   level,
+	})
+}
+
 func main() {
 
 	// 1. 初始化 Logger
-	logger.Init(logger.Options{
-		Level:  "debug", // 开发环境 debug, 生产环境 info
-		Format: "json",  // 生产环境建议 json
-		Output: os.Stdout,
-	})
+	InitLoggerFromGin("mall-api")
 
 	// 读取配置（viper），固定从 ./configs/config.yaml 加载
 	cfg, err := configs.LoadConfig("./configs")
@@ -72,7 +86,7 @@ func main() {
 	r.SetTrustedProxies(nil)
 
 	// 挂载日志中间件
-	r.Use(middleware.Log())
+	r.Use(middleware.Slog())
 
 	// 挂载跨域中间件
 	r.Use(middleware.Cors())
