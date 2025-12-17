@@ -6,20 +6,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRouter(r *gin.Engine, handler *Handler) {
+func RegisterRouter(r *gin.RouterGroup, handlers *Handler) {
 
-	// 不需要鉴权的路由
-	publicGroup := r.Group("/admin/auth")
+	// 不需鉴权
+	publicGroup := r.Group("/auth")
 	{
-		publicGroup.POST("/register", handler.Register)
-		publicGroup.POST("/login", handler.Login)
-		publicGroup.POST("/refresh", handler.RefreshToken)
+		publicGroup.POST("/register", handlers.Register)
+		publicGroup.POST("/login", handlers.Login)
+		publicGroup.POST("/refresh", handlers.RefreshToken)
 	}
 
-	// 需要鉴权的路由
-	authGroup := r.Group("/admin/auth")
+	// 需要鉴权
+	authGroup := r.Group("/auth")
 	authGroup.Use(middleware.JWT())
 	{
-		// authGroup.POST("/logout", handler.Logout)
+		// authGroup.POST("/logout", handlers.Logout)
 	}
 }

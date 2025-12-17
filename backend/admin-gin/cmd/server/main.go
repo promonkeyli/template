@@ -53,9 +53,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	// 4. 端口打印
+	// 4.依赖注入
+	repos := boot.BuildRepos(app.Db, app.Rdb)
+	services := boot.BuildServices(repos)
+	handlers := boot.BuildHandlers(services)
+
+	// 5.路由注册
+	boot.RegisterRouter(app.Ge, handlers)
+
+	// 6. 端口打印
 	fmt.Printf("【%s】service is running on port: %d \n\n", strings.ToUpper(cfg.App.Name), cfg.Server.Port)
 
-	// 5. 运行 http 服务
+	// 7. 运行 http 服务
 	app.Se.ListenAndServe()
 }

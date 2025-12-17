@@ -6,21 +6,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRouter(r *gin.Engine, handler *Handler) {
+func RegisterRouter(r *gin.RouterGroup, handlers *Handler) {
 
-	userGroup := r.Group("/admin/user")
+	userGroup := r.Group("/user")
 	userGroup.Use(middleware.JWT())
 	{
 		// user 列表
-		userGroup.GET("", handler.List)
+		userGroup.GET("", handlers.List)
 
 		// user 新增
-		userGroup.POST("", handler.Create)
+		userGroup.POST("", handlers.Create)
 
 		// user 更新（按 UID）
-		userGroup.PUT("/:uid", handler.Update)
+		userGroup.PUT("/:uid", handlers.Update)
 
 		// user 删除（按 UID）
-		userGroup.DELETE("/:uid", handler.Delete)
+		userGroup.DELETE("/:uid", handlers.Delete)
 	}
 }
