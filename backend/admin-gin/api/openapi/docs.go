@@ -24,6 +24,74 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/auth/login": {
+            "post": {
+                "description": "使用用户名密码登录，成功后返回 token 对",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "用户登录",
+                "parameters": [
+                    {
+                        "description": "登录信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "失败",
+                        "schema": {
+                            "$ref": "#/definitions/http.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/refresh": {
+            "post": {
+                "description": "使用 refresh token 刷新访问 token，成功后返回新的 token 对",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "刷新 Token",
+                "parameters": [
+                    {
+                        "description": "刷新 token 请求",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RefreshReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "失败",
+                        "schema": {
+                            "$ref": "#/definitions/http.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/auth/register": {
             "post": {
                 "description": "使用用户名密码进行注册",
@@ -39,201 +107,20 @@ const docTemplate = `{
                 "summary": "用户注册",
                 "parameters": [
                     {
-                        "description": "登录信息",
+                        "description": "注册信息",
                         "name": "data",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.LoginReq"
+                            "$ref": "#/definitions/auth.RegisterReq"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "失败",
                         "schema": {
-                            "$ref": "#/definitions/http.HttpResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/http.HttpResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/user": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "分页获取后台用户列表，支持按角色与关键字筛选（keyword 可匹配 uid/username/email）",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "AdminUser"
-                ],
-                "summary": "管理员-用户列表",
-                "parameters": [
-                    {
-                        "minimum": 1,
-                        "type": "integer",
-                        "description": "页码",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "maximum": 100,
-                        "minimum": 1,
-                        "type": "integer",
-                        "description": "每页数量",
-                        "name": "size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "角色",
-                        "name": "role",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "关键字(uid/username/email)",
-                        "name": "keyword",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http.HttpResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "创建后台用户（密码会在服务层进行 bcrypt 加密）",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "AdminUser"
-                ],
-                "summary": "管理员-创建用户",
-                "parameters": [
-                    {
-                        "description": "创建用户请求",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/user.CreateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http.HttpResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/user/{uid}": {
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "按 UID 更新后台用户（邮箱/角色/启用状态）",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "AdminUser"
-                ],
-                "summary": "管理员-更新用户",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "用户 UID",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "更新用户请求",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/user.UpdateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http.HttpResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "按 UID 删除后台用户（建议实现为软删除：is_deleted=true）",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "AdminUser"
-                ],
-                "summary": "管理员-删除用户",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "用户 UID",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http.HttpResponse"
+                            "$ref": "#/definitions/http.HttpResponse-any"
                         }
                     }
                 }
@@ -250,169 +137,106 @@ const docTemplate = `{
             "properties": {
                 "password": {
                     "description": "密码",
-                    "type": "string"
+                    "type": "string",
+                    "example": "123456"
                 },
                 "username": {
                     "description": "用户名",
-                    "type": "string"
+                    "type": "string",
+                    "example": "admin"
                 }
             }
         },
-        "http.Code": {
-            "type": "integer",
-            "enum": [
-                200,
-                400,
-                422,
-                401,
-                403,
-                404,
-                409,
-                409,
-                500,
-                501,
-                401,
-                401,
-                500
-            ],
-            "x-enum-comments": {
-                "AlreadyExists": "资源已存在（唯一键冲突等，与 Conflict 同值）",
-                "Conflict": "资源冲突（状态冲突/并发更新冲突等）",
-                "Forbidden": "已登录但无权限",
-                "InternalError": "服务内部错误（兜底）",
-                "InvalidParam": "参数错误（解析/缺失/类型不符）",
-                "NotFound": "资源不存在",
-                "NotImplemented": "功能未实现",
-                "Unauthorized": "未登录/缺少 token/鉴权失败",
-                "ValidationFail": "参数校验失败（binding/validator）"
-            },
-            "x-enum-descriptions": [
-                "",
-                "参数错误（解析/缺失/类型不符）",
-                "参数校验失败（binding/validator）",
-                "未登录/缺少 token/鉴权失败",
-                "已登录但无权限",
-                "资源不存在",
-                "资源冲突（状态冲突/并发更新冲突等）",
-                "资源已存在（唯一键冲突等，与 Conflict 同值）",
-                "服务内部错误（兜底）",
-                "功能未实现",
-                "",
-                "",
-                ""
-            ],
-            "x-enum-varnames": [
-                "Success",
-                "InvalidParam",
-                "ValidationFail",
-                "Unauthorized",
-                "Forbidden",
-                "NotFound",
-                "Conflict",
-                "AlreadyExists",
-                "InternalError",
-                "NotImplemented",
-                "TokenExpired",
-                "TokenInvalid",
-                "Failed"
-            ]
-        },
-        "http.HttpPageResponse": {
+        "auth.LoginRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "description": "业务状态码",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/http.Code"
-                        }
-                    ]
-                },
-                "data": {
-                    "description": "响应数据(可以为空)"
-                },
-                "message": {
-                    "description": "响应描述",
+                "access_token": {
+                    "description": "访问令牌",
                     "type": "string"
                 },
-                "page": {
-                    "description": "响应分页页码",
+                "expires_at": {
+                    "description": "过期时间",
                     "type": "integer"
                 },
-                "size": {
-                    "description": "响应分页大小",
-                    "type": "integer"
+                "refresh_token": {
+                    "description": "刷新令牌",
+                    "type": "string"
                 },
-                "total": {
-                    "description": "响应分页总条数",
-                    "type": "integer"
+                "uid": {
+                    "description": "用户UID",
+                    "type": "string"
                 }
             }
         },
-        "http.HttpResponse": {
+        "auth.RefreshReq": {
             "type": "object",
+            "required": [
+                "refresh_token"
+            ],
             "properties": {
-                "code": {
-                    "description": "业务状态码",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/http.Code"
-                        }
-                    ]
-                },
-                "data": {
-                    "description": "响应数据(可以为空)"
-                },
-                "message": {
-                    "description": "响应描述",
+                "refresh_token": {
+                    "description": "刷新令牌",
                     "type": "string"
                 }
             }
         },
-        "user.CreateReq": {
+        "auth.RegisterReq": {
             "type": "object",
             "required": [
                 "password",
-                "role",
                 "username"
             ],
             "properties": {
-                "email": {
-                    "description": "选填，但如果有值必须符合邮箱格式",
-                    "type": "string"
-                },
                 "password": {
-                    "description": "必填，创建时传入明文密码",
+                    "description": "密码",
                     "type": "string",
-                    "maxLength": 32,
-                    "minLength": 6
-                },
-                "role": {
-                    "description": "角色：不要写死 oneof，使用 user.Role(req.Role).IsValid() 统一校验（在 handler/service 层做）",
-                    "type": "string"
+                    "example": "123456"
                 },
                 "username": {
-                    "description": "必填，且通常有长度限制",
+                    "description": "用户名",
                     "type": "string",
-                    "maxLength": 64,
-                    "minLength": 3
+                    "example": "admin"
                 }
             }
         },
-        "user.UpdateReq": {
+        "http.HttpResponse-any": {
             "type": "object",
             "properties": {
-                "email": {
-                    "description": "允许修改邮箱",
-                    "type": "string"
+                "code": {
+                    "description": "code: HTTP 状态码（与 net/http 保持一致）",
+                    "type": "integer",
+                    "example": 200
                 },
-                "is_active": {
-                    "description": "使用指针，以便区分 \"不修改\" 和 \"修改为禁用(false)\"",
-                    "type": "boolean"
+                "data": {
+                    "description": "data: 响应数据（可以为空）"
                 },
-                "role": {
-                    "description": "允许修改角色：不要写死 oneof，使用 user.Role(req.Role).IsValid() 统一校验（在 handler/service 层做）",
-                    "type": "string"
+                "message": {
+                    "description": "message: 响应描述（默认可用 internal/pkg/http.StatusText(code)）",
+                    "type": "string",
+                    "example": "成功"
+                }
+            }
+        },
+        "http.HttpResponse-auth_LoginRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "code: HTTP 状态码（与 net/http 保持一致）",
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
+                    "description": "data: 响应数据（可以为空）",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/auth.LoginRes"
+                        }
+                    ]
+                },
+                "message": {
+                    "description": "message: 响应描述（默认可用 internal/pkg/http.StatusText(code)）",
+                    "type": "string",
+                    "example": "成功"
                 }
             }
         }

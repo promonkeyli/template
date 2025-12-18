@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"net/http"
 	"strings"
 
 	pkghttp "mall-api/internal/pkg/http"
@@ -18,32 +19,19 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
-// mapServiceErrorCode 将 service 层错误映射为统一的业务 code
+// mapServiceErrorCode 将 service 层错误映射为统一的 HTTP 状态码
 // 约定：service 返回的 ValidationError => 422（参数/业务校验失败）
-func mapServiceErrorCode(err error) pkghttp.Code {
+func mapServiceErrorCode(err error) int {
 	if IsValidationError(err) {
-		return pkghttp.ValidationFail
+		return http.StatusUnprocessableEntity
 	}
-	return pkghttp.InternalError
+	return http.StatusInternalServerError
 }
 
-// @Summary		管理员-用户列表
-// @Description	分页获取后台用户列表，支持按角色与关键字筛选（keyword 可匹配 uid/username/email）
-// @Tags			AdminUser
-// @Accept			json
-// @Produce		json
-// @Param			page	query		int		false	"页码"	minimum(1)
-// @Param			size	query		int		false	"每页数量"	minimum(1)	maximum(100)
-// @Param			role	query		string	false	"角色"
-// @Param			keyword	query		string	false	"关键字(uid/username/email)"
-// @Success		200		{object}	pkghttp.HttpPageResponse
-// @Failure		200		{object}	pkghttp.HttpResponse
-// @Router			/admin/user [get]
-// @Security		BearerAuth
 func (h *Handler) List(c *gin.Context) {
 	var req ReadReq
 	if err := c.ShouldBindQuery(&req); err != nil {
-		pkghttp.Fail(c, pkghttp.InvalidParam, "参数错误")
+		pkghttp.Fail(c, http.StatusBadRequest, "参数错误")
 		return
 	}
 
@@ -56,26 +44,16 @@ func (h *Handler) List(c *gin.Context) {
 	pkghttp.OKWithPage(c, res, int64(total), req.GetPage(), req.GetPageSize())
 }
 
-// @Summary		管理员-创建用户
-// @Description	创建后台用户（密码会在服务层进行 bcrypt 加密）
-// @Tags			AdminUser
-// @Accept			json
-// @Produce		json
-// @Param			data	body		CreateReq	true	"创建用户请求"
-// @Success		200		{object}	pkghttp.HttpResponse
-// @Failure		200		{object}	pkghttp.HttpResponse
-// @Router			/admin/user [post]
-// @Security		BearerAuth
 func (h *Handler) Create(c *gin.Context) {
 	var req CreateReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		pkghttp.Fail(c, pkghttp.InvalidParam, "参数错误")
+		pkghttp.Fail(c, http.StatusBadRequest, "参数错误")
 		return
 	}
 
 	// Role 校验（避免 dto 里写死 oneof 与常量不一致）
 	if !Role(req.Role).IsValid() {
-		pkghttp.Fail(c, pkghttp.ValidationFail, "role 不合法")
+		pkghttp.Fail(c, http.StatusUnprocessableEntity, "role 不合法")
 		return
 	}
 
@@ -87,32 +65,21 @@ func (h *Handler) Create(c *gin.Context) {
 	pkghttp.OK(c, CreateRes{})
 }
 
-// @Summary		管理员-更新用户
-// @Description	按 UID 更新后台用户（邮箱/角色/启用状态）
-// @Tags			AdminUser
-// @Accept			json
-// @Produce		json
-// @Param			uid		path		string		true	"用户 UID"
-// @Param			data	body		UpdateReq	true	"更新用户请求"
-// @Success		200		{object}	pkghttp.HttpResponse
-// @Failure		200		{object}	pkghttp.HttpResponse
-// @Router			/admin/user/{uid} [put]
-// @Security		BearerAuth
 func (h *Handler) Update(c *gin.Context) {
 	uid := strings.TrimSpace(c.Param("uid"))
 	if uid == "" {
-		pkghttp.Fail(c, pkghttp.InvalidParam, "uid 不能为空")
+		pkghttp.Fail(c, http.StatusBadRequest, "uid 不能为空")
 		return
 	}
 
 	var req UpdateReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		pkghttp.Fail(c, pkghttp.InvalidParam, "参数错误")
+		pkghttp.Fail(c, http.StatusBadRequest, "参数错误")
 		return
 	}
 
 	if req.Role != "" && !Role(req.Role).IsValid() {
-		pkghttp.Fail(c, pkghttp.ValidationFail, "role 不合法")
+		pkghttp.Fail(c, http.StatusUnprocessableEntity, "role 不合法")
 		return
 	}
 
@@ -124,27 +91,17 @@ func (h *Handler) Update(c *gin.Context) {
 	pkghttp.OK(c, UpdateRes{})
 }
 
-// @Summary		管理员-删除用户
-// @Description	按 UID 删除后台用户（建议实现为软删除：is_deleted=true）
-// @Tags			AdminUser
-// @Accept			json
-// @Produce		json
-// @Param			uid	path		string	true	"用户 UID"
-// @Success		200	{object}	pkghttp.HttpResponse
-// @Failure		200	{object}	pkghttp.HttpResponse
-// @Router			/admin/user/{uid} [delete]
-// @Security		BearerAuth
 func (h *Handler) Delete(c *gin.Context) {
 	uid := strings.TrimSpace(c.Param("uid"))
 	if uid == "" {
-		pkghttp.Fail(c, pkghttp.InvalidParam, "uid 不能为空")
+		pkghttp.Fail(c, http.StatusBadRequest, "uid 不能为空")
 		return
 	}
 
 	if err := h.service.Delete(c.Request.Context(), uid); err != nil {
 		// 如果你用 gorm.ErrRecordNotFound，可以映射成更友好的提示
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			pkghttp.Fail(c, pkghttp.NotFound, "用户不存在")
+			pkghttp.Fail(c, http.StatusNotFound, "用户不存在")
 			return
 		}
 

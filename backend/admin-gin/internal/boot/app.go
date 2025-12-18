@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"mall-api/configs"
 	"mall-api/internal/pkg/database"
+	"mall-api/internal/pkg/jwt"
 	"mall-api/internal/pkg/logger"
 	"mall-api/internal/pkg/middleware"
 	"net/http"
@@ -20,6 +21,7 @@ type App struct {
 	Log *slog.Logger
 	Db  *gorm.DB
 	Rdb *redis.Client
+	Jt  *jwt.JWT
 	Ge  *gin.Engine
 	Se  *http.Server
 }
@@ -67,10 +69,19 @@ func NewApp(cfg *configs.Config) (*App, error) {
 		return nil, rdbErr
 	}
 
-	// 4. 接管 Gin 内部日志、路由加载信息，全部转为 slog 形式（gin构造必须采用gin.New,且必须在gin.New()之前进行接管）
+	// 4. 构造 JWT 引擎，并初始化 jwt 中间件
+	jt := jwt.New(
+		cfg.JWT.Secret,
+		cfg.JWT.Issuer,
+		time.Duration(cfg.JWT.AccessExpire)*time.Second,
+		time.Duration(cfg.JWT.RefreshExpire)*time.Second,
+	)
+	middleware.InitJWT(jt) // jwt 中间件注入jwt引擎，避免每次调用都传入
+
+	// 5. 接管 Gin 内部日志、路由加载信息，全部转为 slog 形式（gin构造必须采用gin.New,且必须在gin.New()之前进行接管）
 	logger.BuilderGinLog(log)
 
-	// 5. 构造 gin(使用干净的 Gin 引擎，方便接管日志以及其他中间件)
+	// 6. 构造 gin(使用干净的 Gin 引擎，方便接管日志以及其他中间件)
 	ge := gin.New()
 	ge.Use(
 		gin.Recovery(),    // 1. 最外层兜底
@@ -78,7 +89,7 @@ func NewApp(cfg *configs.Config) (*App, error) {
 		middleware.Log(),  // 3. 正常请求日志
 	)
 
-	// 6. 构造 http.Server
+	// 7. 构造 http.Server
 	se := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
 		Handler:      ge,
@@ -86,11 +97,12 @@ func NewApp(cfg *configs.Config) (*App, error) {
 		WriteTimeout: time.Duration(cfg.Server.WriteTimeout) * time.Second, // 写入响应的最大请求时间
 	}
 
-	// 6 构造 app
+	// 8. 构造 app
 	app := &App{
 		Log: log,
 		Db:  db,
 		Rdb: rdb,
+		Jt:  jt,
 		Ge:  ge,
 		Se:  se,
 	}

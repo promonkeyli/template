@@ -12,8 +12,8 @@ import (
 
 type Repository interface {
 	FindUserIsExist(username string) (bool, error)    // 查找用户是否存在
-	CreateUser(account *Account) error                // 创建新用户
-	FindUserByName(username string) (*Account, error) // 根据用户名查找用户
+	CreateUser(account *account) error                // 创建新用户
+	FindUserByName(username string) (*account, error) // 根据用户名查找用户
 
 	SetRefreshToken(ctx context.Context, uid string, token string, duration time.Duration) error // 设置刷新令牌
 	GetRefreshToken(ctx context.Context, uid string) (string, error)                             // 设置刷新令牌
@@ -32,15 +32,15 @@ func NewRepository(db *gorm.DB, rdb *redis.Client) Repository {
 // 查找数据库是否存在该用户，true: 用户存在；false: 用户不存在
 func (r *repo) FindUserIsExist(username string) (bool, error) {
 	var count int64
-	if err := r.db.Model(&userModel{}).Where("username = ?", username).Count(&count).Error; err != nil {
+	if err := r.db.Model(&user{}).Where("username = ?", username).Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count > 0, nil
 }
 
 // 新增用户记录
-func (r *repo) CreateUser(account *Account) error {
-	m := &userModel{
+func (r *repo) CreateUser(account *account) error {
+	m := &user{
 		UID:       account.UID,
 		Username:  account.Username,
 		Password:  account.Password,
@@ -52,13 +52,13 @@ func (r *repo) CreateUser(account *Account) error {
 }
 
 // 查找用户记录
-func (r *repo) FindUserByName(username string) (*Account, error) {
-	var m userModel
+func (r *repo) FindUserByName(username string) (*account, error) {
+	var m user
 	if err := r.db.Where("username = ?", username).First(&m).Error; err != nil {
 		return nil, err
 	}
 
-	return &Account{
+	return &account{
 		UID:      m.UID,
 		Username: m.Username,
 		Password: m.Password,

@@ -4,136 +4,79 @@ definitions:
     properties:
       password:
         description: 密码
+        example: "123456"
         type: string
       username:
         description: 用户名
+        example: admin
         type: string
     required:
     - password
     - username
     type: object
-  http.Code:
-    enum:
-    - 200
-    - 400
-    - 422
-    - 401
-    - 403
-    - 404
-    - 409
-    - 409
-    - 500
-    - 501
-    - 401
-    - 401
-    - 500
-    type: integer
-    x-enum-comments:
-      AlreadyExists: 资源已存在（唯一键冲突等，与 Conflict 同值）
-      Conflict: 资源冲突（状态冲突/并发更新冲突等）
-      Forbidden: 已登录但无权限
-      InternalError: 服务内部错误（兜底）
-      InvalidParam: 参数错误（解析/缺失/类型不符）
-      NotFound: 资源不存在
-      NotImplemented: 功能未实现
-      Unauthorized: 未登录/缺少 token/鉴权失败
-      ValidationFail: 参数校验失败（binding/validator）
-    x-enum-descriptions:
-    - ""
-    - 参数错误（解析/缺失/类型不符）
-    - 参数校验失败（binding/validator）
-    - 未登录/缺少 token/鉴权失败
-    - 已登录但无权限
-    - 资源不存在
-    - 资源冲突（状态冲突/并发更新冲突等）
-    - 资源已存在（唯一键冲突等，与 Conflict 同值）
-    - 服务内部错误（兜底）
-    - 功能未实现
-    - ""
-    - ""
-    - ""
-    x-enum-varnames:
-    - Success
-    - InvalidParam
-    - ValidationFail
-    - Unauthorized
-    - Forbidden
-    - NotFound
-    - Conflict
-    - AlreadyExists
-    - InternalError
-    - NotImplemented
-    - TokenExpired
-    - TokenInvalid
-    - Failed
-  http.HttpPageResponse:
+  auth.LoginRes:
     properties:
-      code:
-        allOf:
-        - $ref: '#/definitions/http.Code'
-        description: 业务状态码
-      data:
-        description: 响应数据(可以为空)
-      message:
-        description: 响应描述
+      access_token:
+        description: 访问令牌
         type: string
-      page:
-        description: 响应分页页码
+      expires_at:
+        description: 过期时间
         type: integer
-      size:
-        description: 响应分页大小
-        type: integer
-      total:
-        description: 响应分页总条数
-        type: integer
-    type: object
-  http.HttpResponse:
-    properties:
-      code:
-        allOf:
-        - $ref: '#/definitions/http.Code'
-        description: 业务状态码
-      data:
-        description: 响应数据(可以为空)
-      message:
-        description: 响应描述
+      refresh_token:
+        description: 刷新令牌
+        type: string
+      uid:
+        description: 用户UID
         type: string
     type: object
-  user.CreateReq:
+  auth.RefreshReq:
     properties:
-      email:
-        description: 选填，但如果有值必须符合邮箱格式
+      refresh_token:
+        description: 刷新令牌
         type: string
+    required:
+    - refresh_token
+    type: object
+  auth.RegisterReq:
+    properties:
       password:
-        description: 必填，创建时传入明文密码
-        maxLength: 32
-        minLength: 6
-        type: string
-      role:
-        description: 角色：不要写死 oneof，使用 user.Role(req.Role).IsValid() 统一校验（在 handler/service
-          层做）
+        description: 密码
+        example: "123456"
         type: string
       username:
-        description: 必填，且通常有长度限制
-        maxLength: 64
-        minLength: 3
+        description: 用户名
+        example: admin
         type: string
     required:
     - password
-    - role
     - username
     type: object
-  user.UpdateReq:
+  http.HttpResponse-any:
     properties:
-      email:
-        description: 允许修改邮箱
+      code:
+        description: 'code: HTTP 状态码（与 net/http 保持一致）'
+        example: 200
+        type: integer
+      data:
+        description: 'data: 响应数据（可以为空）'
+      message:
+        description: 'message: 响应描述（默认可用 internal/pkg/http.StatusText(code)）'
+        example: 成功
         type: string
-      is_active:
-        description: 使用指针，以便区分 "不修改" 和 "修改为禁用(false)"
-        type: boolean
-      role:
-        description: 允许修改角色：不要写死 oneof，使用 user.Role(req.Role).IsValid() 统一校验（在 handler/service
-          层做）
+    type: object
+  http.HttpResponse-auth_LoginRes:
+    properties:
+      code:
+        description: 'code: HTTP 状态码（与 net/http 保持一致）'
+        example: 200
+        type: integer
+      data:
+        allOf:
+        - $ref: '#/definitions/auth.LoginRes'
+        description: 'data: 响应数据（可以为空）'
+      message:
+        description: 'message: 响应描述（默认可用 internal/pkg/http.StatusText(code)）'
+        example: 成功
         type: string
     type: object
 host: localhost:8081
@@ -150,11 +93,11 @@ info:
   title: Mall API
   version: "1.0"
 paths:
-  /admin/auth/register:
+  /admin/auth/login:
     post:
       consumes:
       - application/json
-      description: 使用用户名密码进行注册
+      description: 使用用户名密码登录，成功后返回 token 对
       parameters:
       - description: 登录信息
         in: body
@@ -166,127 +109,56 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: 失败
           schema:
-            $ref: '#/definitions/http.HttpResponse'
-        "400":
-          description: 参数错误
-          schema:
-            $ref: '#/definitions/http.HttpResponse'
-      summary: 用户注册
+            $ref: '#/definitions/http.HttpResponse-any'
+      summary: 用户登录
       tags:
       - Auth
-  /admin/user:
-    get:
-      consumes:
-      - application/json
-      description: 分页获取后台用户列表，支持按角色与关键字筛选（keyword 可匹配 uid/username/email）
-      parameters:
-      - description: 页码
-        in: query
-        minimum: 1
-        name: page
-        type: integer
-      - description: 每页数量
-        in: query
-        maximum: 100
-        minimum: 1
-        name: size
-        type: integer
-      - description: 角色
-        in: query
-        name: role
-        type: string
-      - description: 关键字(uid/username/email)
-        in: query
-        name: keyword
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http.HttpResponse'
-      security:
-      - BearerAuth: []
-      summary: 管理员-用户列表
-      tags:
-      - AdminUser
+  /admin/auth/refresh:
     post:
       consumes:
       - application/json
-      description: 创建后台用户（密码会在服务层进行 bcrypt 加密）
+      description: 使用 refresh token 刷新访问 token，成功后返回新的 token 对
       parameters:
-      - description: 创建用户请求
+      - description: 刷新 token 请求
         in: body
         name: data
         required: true
         schema:
-          $ref: '#/definitions/user.CreateReq'
+          $ref: '#/definitions/auth.RefreshReq'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: 失败
           schema:
-            $ref: '#/definitions/http.HttpResponse'
-      security:
-      - BearerAuth: []
-      summary: 管理员-创建用户
+            $ref: '#/definitions/http.HttpResponse-any'
+      summary: 刷新 Token
       tags:
-      - AdminUser
-  /admin/user/{uid}:
-    delete:
+      - Auth
+  /admin/auth/register:
+    post:
       consumes:
       - application/json
-      description: 按 UID 删除后台用户（建议实现为软删除：is_deleted=true）
+      description: 使用用户名密码进行注册
       parameters:
-      - description: 用户 UID
-        in: path
-        name: uid
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http.HttpResponse'
-      security:
-      - BearerAuth: []
-      summary: 管理员-删除用户
-      tags:
-      - AdminUser
-    put:
-      consumes:
-      - application/json
-      description: 按 UID 更新后台用户（邮箱/角色/启用状态）
-      parameters:
-      - description: 用户 UID
-        in: path
-        name: uid
-        required: true
-        type: string
-      - description: 更新用户请求
+      - description: 注册信息
         in: body
         name: data
         required: true
         schema:
-          $ref: '#/definitions/user.UpdateReq'
+          $ref: '#/definitions/auth.RegisterReq'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: 失败
           schema:
-            $ref: '#/definitions/http.HttpResponse'
-      security:
-      - BearerAuth: []
-      summary: 管理员-更新用户
+            $ref: '#/definitions/http.HttpResponse-any'
+      summary: 用户注册
       tags:
-      - AdminUser
+      - Auth
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.

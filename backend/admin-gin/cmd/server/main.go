@@ -54,7 +54,7 @@ func main() {
 	}
 
 	// 4.注入依赖
-	boot.Register(app.Ge, app.Db, app.Rdb)
+	boot.Register(app.Ge, app.Db, app.Rdb, app.Jt)
 
 	// 5. 端口打印
 	fmt.Printf("【%s】service is running on port: %d \n\n", strings.ToUpper(cfg.App.Name), cfg.Server.Port)

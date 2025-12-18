@@ -8,16 +8,8 @@ import (
 )
 
 var (
-	// JWT密钥，建议从配置文件读取
-	jwtSecret = []byte("your-secret-key")
-
-	// Token过期时间配置
-	AccessTokenExpire  = time.Hour * 2      // Access Token 2小时过期
-	RefreshTokenExpire = time.Hour * 24 * 7 // Refresh Token 7天过期
-
-	// 错误定义
-	ErrInvalidToken = errors.New("invalid token")
-	ErrExpiredToken = errors.New("token has expired")
+	ErrInvalidToken = errors.New("无效令牌") // 两种错误 http 业务 code 均返回401
+	ErrExpiredToken = errors.New("令牌过期")
 )
 
 // Claims JWT声明结构
@@ -27,31 +19,54 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// TokenPair 包含access token和refresh token
+// TokenPair 包含 access token 和 refresh token
 type TokenPair struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
-	ExpiresAt    int64  `json:"expires_at"` // access token过期时间戳
+	ExpiresAt    int64  `json:"expires_at"` // access token 过期时间戳
 }
 
-// GenerateAccessToken 生成Access Token
-func GenerateAccessToken(uid string) (string, error) {
-	return generateToken(uid, "access", AccessTokenExpire)
+// JWT 处理引擎
+type JWT struct {
+	secret        []byte
+	issuer        string
+	accessExpire  time.Duration
+	refreshExpire time.Duration
 }
 
-// GenerateRefreshToken 生成Refresh Token
-func GenerateRefreshToken(uid string) (string, error) {
-	return generateToken(uid, "refresh", RefreshTokenExpire)
+// New 创建 JWT 实例
+func New(secret, issuer string, accessExpire, refreshExpire time.Duration) *JWT {
+	return &JWT{
+		secret:        []byte(secret),
+		issuer:        issuer,
+		accessExpire:  accessExpire,
+		refreshExpire: refreshExpire,
+	}
 }
 
-// GenerateTokenPair 生成一对Token (access + refresh)
-func GenerateTokenPair(uid string) (*TokenPair, error) {
-	accessToken, err := GenerateAccessToken(uid)
+// GetAccessExpire 获取 Access Token 过期时间
+func (j *JWT) GetAccessExpire() time.Duration {
+	return j.accessExpire
+}
+
+// GetRefreshExpire 获取 Refresh Token 过期时间
+func (j *JWT) GetRefreshExpire() time.Duration {
+	return j.refreshExpire
+}
+
+// GenerateToken 签发指定类型的 Token (用于刷新场景，可指定自定义有效期)
+func (j *JWT) GenerateToken(uid string, tokenType string, expireDuration time.Duration) (string, error) {
+	return j.generateToken(uid, tokenType, expireDuration)
+}
+
+// GenerateTokenPair 生成一对 Token (access + refresh)
+func (j *JWT) GenerateTokenPair(uid string) (*TokenPair, error) {
+	accessToken, err := j.generateToken(uid, "access", j.accessExpire)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := GenerateRefreshToken(uid)
+	refreshToken, err := j.generateToken(uid, "refresh", j.refreshExpire)
 	if err != nil {
 		return nil, err
 	}
@@ -59,30 +74,15 @@ func GenerateTokenPair(uid string) (*TokenPair, error) {
 	return &TokenPair{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		ExpiresAt:    time.Now().Add(AccessTokenExpire).Unix(),
+		ExpiresAt:    time.Now().Add(j.accessExpire).Unix(),
 	}, nil
 }
 
-// generateToken 生成JWT token的通用函数
-func generateToken(uid string, tokenType string, expireDuration time.Duration) (string, error) {
-	claims := Claims{
-		UID:       uid,
-		TokenType: tokenType,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expireDuration)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtSecret)
-}
-
-// ParseToken 解析JWT token (通用)
-func ParseToken(tokenString string) (*Claims, error) {
+// ParseToken 解析并验证 JWT token
+// 如果 tokenType 不为空，则会额外校验声明中的 token_type 字段是否匹配 ("access" 或 "refresh")
+func (j *JWT) ParseToken(tokenString string, tokenType string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return jwtSecret, nil
+		return j.secret, nil
 	})
 
 	if err != nil {
@@ -92,64 +92,32 @@ func ParseToken(tokenString string) (*Claims, error) {
 		return nil, ErrInvalidToken
 	}
 
-	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
-		return claims, nil
+	claims, ok := token.Claims.(*Claims)
+	if !ok || !token.Valid {
+		return nil, ErrInvalidToken
 	}
 
-	return nil, ErrInvalidToken
-}
-
-// ParseAccessToken 解析并验证Access Token
-func ParseAccessToken(tokenString string) (*Claims, error) {
-	claims, err := ParseToken(tokenString)
-	if err != nil {
-		return nil, err
-	}
-
-	if claims.TokenType != "access" {
+	// 校验 Token 类型（如果指定了类型）
+	if tokenType != "" && claims.TokenType != tokenType {
 		return nil, ErrInvalidToken
 	}
 
 	return claims, nil
 }
 
-// ParseRefreshToken 解析并验证Refresh Token
-func ParseRefreshToken(tokenString string) (*Claims, error) {
-	claims, err := ParseToken(tokenString)
-	if err != nil {
-		return nil, err
+// token 生成通用函数
+func (j *JWT) generateToken(uid string, tokenType string, expireDuration time.Duration) (string, error) {
+	now := time.Now()
+	claims := Claims{
+		UID:       uid,
+		TokenType: tokenType,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    j.issuer,
+			ExpiresAt: jwt.NewNumericDate(now.Add(expireDuration)),
+			IssuedAt:  jwt.NewNumericDate(now),
+			NotBefore: jwt.NewNumericDate(now),
+		},
 	}
 
-	if claims.TokenType != "refresh" {
-		return nil, ErrInvalidToken
-	}
-
-	return claims, nil
-}
-
-// ValidateToken 验证token是否有效 (鉴权函数)
-func ValidateToken(tokenString string) (*Claims, error) {
-	return ParseAccessToken(tokenString)
-}
-
-// RefreshAccessToken 使用refresh token刷新access token
-func RefreshAccessToken(refreshTokenString string) (*TokenPair, error) {
-	claims, err := ParseRefreshToken(refreshTokenString)
-	if err != nil {
-		return nil, err
-	}
-
-	// 使用refresh token中的信息生成新的token pair
-	return GenerateTokenPair(claims.UID)
-}
-
-// SetJWTSecret 设置JWT密钥 (可在初始化时调用)
-func SetJWTSecret(secret string) {
-	jwtSecret = []byte(secret)
-}
-
-// SetTokenExpire 设置Token过期时间 (可在初始化时调用)
-func SetTokenExpire(accessExpire, refreshExpire time.Duration) {
-	AccessTokenExpire = accessExpire
-	RefreshTokenExpire = refreshExpire
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(j.secret)
 }
