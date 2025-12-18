@@ -53,7 +53,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// 4.注册依赖
+	// 4.注入依赖
 	boot.Register(app.Ge, app.Db, app.Rdb)
 
 	// 5. 端口打印

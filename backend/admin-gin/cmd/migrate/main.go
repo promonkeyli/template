@@ -2,43 +2,65 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
-	"time"
+	"mall-api/configs"
+	"mall-api/internal/app/admin/user"
+	"mall-api/internal/pkg/database"
+	"os"
 )
 
 func main() {
-	var (
-		dryRun  bool
-		timeout time.Duration
-	)
 
-	flag.BoolVar(&dryRun, "dry-run", false, "只打印将要执行的迁移，不实际执行（当前仅做占位）")
-	flag.DurationVar(&timeout, "timeout", 15*time.Second, "数据库连接与迁移超时时间")
-	flag.Parse()
+	// 1.从环境变量获取运行模式
+	runMode := os.Getenv("APP_ENV_MODE")
+	env := "dev"
+	if runMode != "" {
+		env = runMode
+	}
 
-	slog.Info("开始执行数据库迁移...", "dryRun", dryRun, "timeout", timeout.String(), "configPath", "./configs")
+	// 2. 依据环境变量初始化系统配置
+	cfg, err := configs.InitConfig(env)
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
 
-	// 	pgCfg, err := database.ProvidePostgreConfig(cfg)
-	// 	if err != nil {
-	// 		slog.Error("解析数据库配置失败", "error", err.Error())
-	// 		os.Exit(1)
-	// 	}
+	// 3.连接数据库
+	db, dbErr := database.NewPostgre(&database.PostgreConfig{
+		Host:            cfg.Database.Host,
+		User:            cfg.Database.User,
+		Password:        cfg.Database.Password,
+		DBName:          cfg.Database.DBName,
+		Port:            cfg.Database.Port,
+		TimeZone:        cfg.Database.TimeZone,
+		MaxIdleConns:    cfg.Database.MaxIdleConns,
+		MaxOpenConns:    cfg.Database.MaxOpenConns,
+		ConnMaxLifetime: cfg.Database.ConnMaxLifetime,
+	})
+	if dbErr != nil {
+		slog.Error(dbErr.Error())
+		os.Exit(1)
+	}
 
-	// 	db, err := database.NewPostgre(pgCfg)
-	// 	if err != nil {
-	// 		slog.Error("数据库连接失败", "error", err.Error())
-	// 		os.Exit(1)
-	// 	}
+	// 4. 获取底层的 sql.DB 对象用于关闭
+	sqlDB, err := db.DB()
+	if err != nil {
+		slog.Error(err.Error())
+	}
 
-	// 	// 在这里注册需要迁移的模型
-	// 	if err := db.AutoMigrate(
-	// 		&user.User{},
-	// 	); err != nil {
-	// 		slog.Error("数据库迁移失败", "error", err.Error())
-	// 		os.Exit(1)
-	// 	}
+	// 5. 使用 defer 确保在 main 函数结束时关闭连接
+	defer func() {
+		if err := sqlDB.Close(); err != nil {
+			slog.Error("关闭数据库连接失败：%v", "error", err.Error())
+		} else {
+			slog.Info("数据库连接已关闭")
+		}
+	}()
 
-	//		slog.Info("数据库迁移完成")
-	//	}
+	// 6. 迁移数据库
+	if err := db.AutoMigrate(&user.User{}); err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+	slog.Info("数据库迁移成功")
 }
