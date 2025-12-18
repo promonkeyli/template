@@ -67,15 +67,18 @@ func NewApp(cfg *configs.Config) (*App, error) {
 		return nil, rdbErr
 	}
 
-	// 4. 构造 gin(使用干净的 Gin 引擎，方便接管日志以及其他中间件)
+	// 4. 接管 Gin 内部日志、路由加载信息，全部转为 slog 形式（gin构造必须采用gin.New,且必须在gin.New()之前进行接管）
+	logger.BuilderGinLog(log)
+
+	// 5. 构造 gin(使用干净的 Gin 引擎，方便接管日志以及其他中间件)
 	ge := gin.New()
 	ge.Use(
-		gin.Recovery(),      // 1. 最外层兜底
-		middleware.Cors(),   // 2. 尽早处理 OPTIONS
-		middleware.Log(log), // 3. 正常请求日志
+		gin.Recovery(),    // 1. 最外层兜底
+		middleware.Cors(), // 2. 尽早处理 OPTIONS
+		middleware.Log(),  // 3. 正常请求日志
 	)
 
-	// 5. 构造 http.Server
+	// 6. 构造 http.Server
 	se := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
 		Handler:      ge,

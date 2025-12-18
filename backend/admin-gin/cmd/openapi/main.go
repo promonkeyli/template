@@ -10,17 +10,16 @@ import (
 
 func main() {
 
-	// 执行 swag fmt 命令
+	// 1. 执行 swag fmt 命令
 	if err := runCommand("swag", "fmt"); err != nil {
 		slog.Error(err.Error())
 		return
 	}
 
-	// 执行 swag init 命令
-	// 自动扫描 internal/app 下的所有模块目录
+	// 2.openapi注释里先添加程序入口目录
 	dirs := []string{"./cmd/server"}
 
-	// 扫描 internal/app 下的所有子目录
+	// 3. 添加internal/app 下的所有子目录
 	appModules, err := scanAppModules("./internal/app")
 	if err != nil {
 		slog.Error("扫描模块目录失败: " + err.Error())
@@ -28,16 +27,17 @@ func main() {
 	}
 	dirs = append(dirs, appModules...)
 
-	// 添加其他需要扫描的目录
+	// 4. 添加其他需要扫描的目录：例如此处有定义公共的响应体，以及响应code
 	dirs = append(dirs, "./internal/pkg/http")
 
 	dir := strings.Join(dirs, ",")
+
+	// 5. 执行 swag init 命令, 输出 openapi 文档到指定目录
 	if err := runCommand("swag", "init", "--dir", dir, "-o", "./api/openapi"); err != nil {
 		slog.Error(err.Error())
 		return
 	}
-	slog.Info("swagger文档生成成功！")
-
+	slog.Info("openAPI 文档生成成功")
 }
 
 // scanAppModules 扫描指定目录下的所有子目录

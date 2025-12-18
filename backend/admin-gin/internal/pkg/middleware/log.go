@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Log(log *slog.Logger) gin.HandlerFunc {
+func Log() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
@@ -39,11 +39,11 @@ func Log(log *slog.Logger) gin.HandlerFunc {
 
 		switch {
 		case status >= 500:
-			log.Error("http request error", args...)
+			slog.Error("http request error", args...)
 		case status >= 400:
-			log.Warn("http request warning", args...)
+			slog.Warn("http request warning", args...)
 		default:
-			log.Info("http request", args...)
+			slog.Info("http request", args...)
 		}
 	}
 }
