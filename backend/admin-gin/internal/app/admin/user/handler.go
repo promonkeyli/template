@@ -43,29 +43,17 @@ func mapServiceErrorCode(err error) pkghttp.Code {
 func (h *Handler) List(c *gin.Context) {
 	var req ReadReq
 	if err := c.ShouldBindQuery(&req); err != nil {
-		pkghttp.Fail(c, &pkghttp.FailOption{
-			Code:    pkghttp.InvalidParam,
-			Message: "参数错误",
-		})
+		pkghttp.Fail(c, pkghttp.InvalidParam, "参数错误")
 		return
 	}
 
 	res, total, err := h.service.List(c.Request.Context(), &req)
 	if err != nil {
-		pkghttp.Fail(c, &pkghttp.FailOption{
-			Code:    mapServiceErrorCode(err),
-			Message: err.Error(),
-		})
+		pkghttp.Fail(c, mapServiceErrorCode(err), err.Error())
 		return
 	}
 
-	pkghttp.OKWithPage(c, &pkghttp.PageOption{
-		Data:    res,
-		Message: "查询成功",
-		Page:    req.GetPage(),
-		Size:    req.GetPageSize(),
-		Total:   total,
-	})
+	pkghttp.OKWithPage(c, res, int64(total), req.GetPage(), req.GetPageSize())
 }
 
 // @Summary		管理员-创建用户
@@ -81,34 +69,22 @@ func (h *Handler) List(c *gin.Context) {
 func (h *Handler) Create(c *gin.Context) {
 	var req CreateReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		pkghttp.Fail(c, &pkghttp.FailOption{
-			Code:    pkghttp.InvalidParam,
-			Message: "参数错误",
-		})
+		pkghttp.Fail(c, pkghttp.InvalidParam, "参数错误")
 		return
 	}
 
 	// Role 校验（避免 dto 里写死 oneof 与常量不一致）
 	if !Role(req.Role).IsValid() {
-		pkghttp.Fail(c, &pkghttp.FailOption{
-			Code:    pkghttp.ValidationFail,
-			Message: "role 不合法",
-		})
+		pkghttp.Fail(c, pkghttp.ValidationFail, "role 不合法")
 		return
 	}
 
 	if err := h.service.Create(c.Request.Context(), &req); err != nil {
-		pkghttp.Fail(c, &pkghttp.FailOption{
-			Code:    mapServiceErrorCode(err),
-			Message: err.Error(),
-		})
+		pkghttp.Fail(c, mapServiceErrorCode(err), err.Error())
 		return
 	}
 
-	pkghttp.OK(c, &pkghttp.OKOption{
-		Data:    CreateRes{},
-		Message: "创建成功",
-	})
+	pkghttp.OK(c, CreateRes{})
 }
 
 // @Summary		管理员-更新用户
@@ -125,42 +101,27 @@ func (h *Handler) Create(c *gin.Context) {
 func (h *Handler) Update(c *gin.Context) {
 	uid := strings.TrimSpace(c.Param("uid"))
 	if uid == "" {
-		pkghttp.Fail(c, &pkghttp.FailOption{
-			Code:    pkghttp.InvalidParam,
-			Message: "uid 不能为空",
-		})
+		pkghttp.Fail(c, pkghttp.InvalidParam, "uid 不能为空")
 		return
 	}
 
 	var req UpdateReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		pkghttp.Fail(c, &pkghttp.FailOption{
-			Code:    pkghttp.InvalidParam,
-			Message: "参数错误",
-		})
+		pkghttp.Fail(c, pkghttp.InvalidParam, "参数错误")
 		return
 	}
 
 	if req.Role != "" && !Role(req.Role).IsValid() {
-		pkghttp.Fail(c, &pkghttp.FailOption{
-			Code:    pkghttp.ValidationFail,
-			Message: "role 不合法",
-		})
+		pkghttp.Fail(c, pkghttp.ValidationFail, "role 不合法")
 		return
 	}
 
 	if err := h.service.Update(c.Request.Context(), uid, &req); err != nil {
-		pkghttp.Fail(c, &pkghttp.FailOption{
-			Code:    mapServiceErrorCode(err),
-			Message: err.Error(),
-		})
+		pkghttp.Fail(c, mapServiceErrorCode(err), err.Error())
 		return
 	}
 
-	pkghttp.OK(c, &pkghttp.OKOption{
-		Data:    UpdateRes{},
-		Message: "更新成功",
-	})
+	pkghttp.OK(c, UpdateRes{})
 }
 
 // @Summary		管理员-删除用户
@@ -176,32 +137,20 @@ func (h *Handler) Update(c *gin.Context) {
 func (h *Handler) Delete(c *gin.Context) {
 	uid := strings.TrimSpace(c.Param("uid"))
 	if uid == "" {
-		pkghttp.Fail(c, &pkghttp.FailOption{
-			Code:    pkghttp.InvalidParam,
-			Message: "uid 不能为空",
-		})
+		pkghttp.Fail(c, pkghttp.InvalidParam, "uid 不能为空")
 		return
 	}
 
 	if err := h.service.Delete(c.Request.Context(), uid); err != nil {
 		// 如果你用 gorm.ErrRecordNotFound，可以映射成更友好的提示
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			pkghttp.Fail(c, &pkghttp.FailOption{
-				Code:    pkghttp.NotFound,
-				Message: "用户不存在",
-			})
+			pkghttp.Fail(c, pkghttp.NotFound, "用户不存在")
 			return
 		}
 
-		pkghttp.Fail(c, &pkghttp.FailOption{
-			Code:    mapServiceErrorCode(err),
-			Message: err.Error(),
-		})
+		pkghttp.Fail(c, mapServiceErrorCode(err), err.Error())
 		return
 	}
 
-	pkghttp.OK(c, &pkghttp.OKOption{
-		Data:    DeleteRes{},
-		Message: "删除成功",
-	})
+	pkghttp.OK(c, DeleteRes{})
 }

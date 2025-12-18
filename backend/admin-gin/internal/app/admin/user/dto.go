@@ -56,7 +56,7 @@ type UpdateRes struct{}
 type ReadReq struct {
 
 	// 分页请求结构体复用
-	http.PageReq
+	http.HttpPageRequest
 
 	// 角色：枚举
 	Role string `form:"role"`

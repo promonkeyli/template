@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"mall-api/internal/pkg/http"
+	pkghttp "mall-api/internal/pkg/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,26 +28,19 @@ func (h *Handler) Register(c *gin.Context) {
 	// 1. 读取接口传参
 	var req RegisterReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		http.Fail(c, &http.FailOption{
-			Code:    http.InvalidParam,
-			Message: "参数错误",
-		})
+		pkghttp.Fail(c, pkghttp.InvalidParam, "参数错误")
 		return
 	}
 
 	// 2. 调用 service 层的用户注册
 	if err := h.service.Register(&req); err != nil {
-		http.Fail(c, &http.FailOption{
-			Code:    http.Conflict,
-			Message: err.Error(),
-		})
+		pkghttp.Fail(c, pkghttp.Conflict, err.Error())
 		return
 	}
 
 	// 3. 返回成功
-	http.OK(c, &http.OKOption{
-		Data:    nil,
-		Message: "用户注册成功",
+	pkghttp.OK(c, gin.H{
+		"message": "用户注册成功",
 	})
 
 }
@@ -58,25 +51,16 @@ func (h *Handler) Login(c *gin.Context) {
 	// 1.读取接口传参
 	var req LoginReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		http.Fail(c, &http.FailOption{
-			Code:    http.InvalidParam,
-			Message: "参数错误",
-		})
+		pkghttp.Fail(c, pkghttp.InvalidParam, "参数错误")
 		return
 	}
 
 	// 2.调用 service 层的 login 业务
 	res, err := h.service.Login(&req)
 	if err != nil {
-		http.Fail(c, &http.FailOption{
-			Code:    http.Unauthorized,
-			Message: err.Error(),
-		})
+		pkghttp.Fail(c, pkghttp.Unauthorized, err.Error())
 	} else {
-		http.OK(c, &http.OKOption{
-			Data:    res,
-			Message: "登录成功",
-		})
+		pkghttp.OK(c, res)
 	}
 }
 
@@ -91,26 +75,17 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	// 1.参数校验
 	var req RefreshReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		http.Fail(c, &http.FailOption{
-			Code:    http.InvalidParam,
-			Message: http.InvalidParam.Message(),
-		})
+		pkghttp.Fail(c, pkghttp.InvalidParam, pkghttp.InvalidParam.GetMsg())
 		return
 	}
 
 	// 2.调用 service 层的 refresh 业务
 	res, err := h.service.Refresh(c.Request.Context(), &req)
 	if err != nil {
-		http.Fail(c, &http.FailOption{
-			Code:    http.Failed,
-			Message: err.Error(),
-		})
+		pkghttp.Fail(c, pkghttp.Failed, err.Error())
 		return
 	}
 
 	// 3.返回 token 对
-	http.OK(c, &http.OKOption{
-		Data:    res,
-		Message: http.Success.Message(),
-	})
+	pkghttp.OK(c, res)
 }

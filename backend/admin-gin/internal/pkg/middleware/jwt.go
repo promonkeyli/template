@@ -8,53 +8,39 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// JWT 标准JWT鉴权中间件
-// 用法：在需要鉴权的路由分组中使用 group.Use(middleware.JWT())
 func JWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
+		tokenHeader := c.GetHeader("Authorization")
 
-		// 检查token是否存在且格式正确
-		if tokenString == "" {
-			http.Fail(c, &http.FailOption{
-				Code:    http.Unauthorized,
-				Message: "缺少令牌",
-			})
-			c.Abort()
-			return
-		}
-		if !strings.HasPrefix(tokenString, "Bearer ") {
-			http.Fail(c, &http.FailOption{
-				Code:    http.TokenInvalid,
-				Message: "令牌格式错误",
-			})
-			c.Abort()
+		// 1. 检查是否存在且格式为 "Bearer <token>"
+		if tokenHeader == "" {
+			http.Fail(c, http.Unauthorized, "缺少认证令牌")
 			return
 		}
 
-		// 移除 "Bearer " 前缀
-		tokenString = tokenString[7:]
+		parts := strings.SplitN(tokenHeader, " ", 2)
+		if !(len(parts) == 2 && parts[0] == "Bearer") {
+			http.Fail(c, http.TokenInvalid, "令牌格式错误，请使用 Bearer 格式")
+			return
+		}
 
-		// 使用封装好的ValidateToken函数验证access token
+		tokenString := parts[1]
+
+		// 2. 验证令牌
 		claims, err := jwt.ValidateToken(tokenString)
 		if err != nil {
-			// 区分token过期和其他错误
+			// 区分过期和其他错误
+			// 假设你之前定义的 http.TokenExpired = 401, http.TokenInvalid = 401
 			if err == jwt.ErrExpiredToken {
-				http.Fail(c, &http.FailOption{
-					Code:    http.TokenExpired,
-					Message: "令牌已过期",
-				})
+				http.Fail(c, http.TokenExpired, "登录已过期，请重新登录")
 			} else {
-				http.Fail(c, &http.FailOption{
-					Code:    http.TokenInvalid,
-					Message: "无效的令牌",
-				})
+				http.Fail(c, http.TokenInvalid, "令牌无效或已失效")
 			}
-			c.Abort()
 			return
 		}
 
-		// 将用户UID存储到上下文中，供后续处理器使用
+		// 3. 存储结果并放行
+		// 存储到上下文供后续 Controller 使用：uid := c.GetUint("uid")
 		c.Set("uid", claims.UID)
 		c.Next()
 	}
