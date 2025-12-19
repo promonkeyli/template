@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  auth.LoginReq:
+  auth.loginReq:
     properties:
       password:
         description: 密码
@@ -14,22 +14,22 @@ definitions:
     - password
     - username
     type: object
-  auth.LoginRes:
+  auth.loginRes:
     properties:
       access_token:
-        description: 访问令牌
+        description: '访问令牌: 15分钟过期'
         type: string
       expires_at:
-        description: 过期时间
+        description: 过期时间：访问令牌 Access_token 过期时间(秒)
         type: integer
       refresh_token:
-        description: 刷新令牌
+        description: 刷新令牌：7天过期
         type: string
       uid:
         description: 用户UID
         type: string
     type: object
-  auth.RefreshReq:
+  auth.logoutReq:
     properties:
       refresh_token:
         description: 刷新令牌
@@ -37,7 +37,15 @@ definitions:
     required:
     - refresh_token
     type: object
-  auth.RegisterReq:
+  auth.refreshReq:
+    properties:
+      refresh_token:
+        description: 刷新令牌
+        type: string
+    required:
+    - refresh_token
+    type: object
+  auth.registerReq:
     properties:
       password:
         description: 密码
@@ -51,32 +59,36 @@ definitions:
     - password
     - username
     type: object
-  http.HttpResponse-any:
-    properties:
-      code:
-        description: 'code: HTTP 状态码（与 net/http 保持一致）'
-        example: 200
-        type: integer
-      data:
-        description: 'data: 响应数据（可以为空）'
-      message:
-        description: 'message: 响应描述（默认可用 internal/pkg/http.StatusText(code)）'
-        example: 成功
-        type: string
+  http.Empty:
     type: object
-  http.HttpResponse-auth_LoginRes:
+  http.HttpResponse-Empty:
     properties:
       code:
-        description: 'code: HTTP 状态码（与 net/http 保持一致）'
+        description: 'code: HTTP 状态码'
         example: 200
         type: integer
       data:
         allOf:
-        - $ref: '#/definitions/auth.LoginRes'
+        - $ref: '#/definitions/http.Empty'
         description: 'data: 响应数据（可以为空）'
       message:
-        description: 'message: 响应描述（默认可用 internal/pkg/http.StatusText(code)）'
-        example: 成功
+        description: 'message: 响应描述'
+        example: 操作成功
+        type: string
+    type: object
+  http.HttpResponse-auth_loginRes:
+    properties:
+      code:
+        description: 'code: HTTP 状态码'
+        example: 200
+        type: integer
+      data:
+        allOf:
+        - $ref: '#/definitions/auth.loginRes'
+        description: 'data: 响应数据（可以为空）'
+      message:
+        description: 'message: 响应描述'
+        example: 操作成功
         type: string
     type: object
 host: localhost:8081
@@ -97,65 +109,87 @@ paths:
     post:
       consumes:
       - application/json
-      description: 使用用户名密码登录，成功后返回 token 对
+      description: 用户名/密码登录
       parameters:
-      - description: 登录信息
+      - description: 登录参数
         in: body
         name: data
         required: true
         schema:
-          $ref: '#/definitions/auth.LoginReq'
+          $ref: '#/definitions/auth.loginReq'
       produces:
       - application/json
       responses:
         "200":
-          description: 失败
+          description: 登录成功
           schema:
-            $ref: '#/definitions/http.HttpResponse-any'
+            $ref: '#/definitions/http.HttpResponse-auth_loginRes'
       summary: 用户登录
+      tags:
+      - Auth
+  /admin/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: 用户注销,同时移除刷新令牌
+      parameters:
+      - description: 注销参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/auth.logoutReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 注销成功
+          schema:
+            $ref: '#/definitions/http.HttpResponse-Empty'
+      summary: 用户注销
       tags:
       - Auth
   /admin/auth/refresh:
     post:
       consumes:
       - application/json
-      description: 使用 refresh token 刷新访问 token，成功后返回新的 token 对
+      description: 用于短期令牌 Access_Token 续期
       parameters:
-      - description: 刷新 token 请求
+      - description: 刷新令牌请求参数
         in: body
         name: data
         required: true
         schema:
-          $ref: '#/definitions/auth.RefreshReq'
+          $ref: '#/definitions/auth.refreshReq'
       produces:
       - application/json
       responses:
         "200":
-          description: 失败
+          description: 刷新成功
           schema:
-            $ref: '#/definitions/http.HttpResponse-any'
-      summary: 刷新 Token
+            $ref: '#/definitions/http.HttpResponse-auth_loginRes'
+      summary: 刷新令牌
       tags:
       - Auth
   /admin/auth/register:
     post:
       consumes:
       - application/json
-      description: 使用用户名密码进行注册
+      description: 用户名/密码进行注册
       parameters:
-      - description: 注册信息
+      - description: 注册参数
         in: body
         name: data
         required: true
         schema:
-          $ref: '#/definitions/auth.RegisterReq'
+          $ref: '#/definitions/auth.registerReq'
       produces:
       - application/json
       responses:
         "200":
-          description: 失败
+          description: 注册成功
           schema:
-            $ref: '#/definitions/http.HttpResponse-any'
+            $ref: '#/definitions/http.HttpResponse-Empty'
       summary: 用户注册
       tags:
       - Auth

@@ -1,16 +1,15 @@
 package http
 
 type HttpResponse[T any] struct {
-	// code: HTTP 状态码（与 net/http 保持一致）
+	// code: HTTP 状态码
 	Code int `json:"code" example:"200"`
-	// message: 响应描述（默认可用 internal/pkg/http.StatusText(code)）
-	Message string `json:"message" example:"成功"`
+	// message: 响应描述
+	Message string `json:"message" example:"操作成功"`
 	// data: 响应数据（可以为空）
 	Data T `json:"data,omitempty"`
 }
 
 type HttpPageResponse[T any] struct {
-	// 嵌入 HttpResponse 使用泛型切片
 	HttpResponse[[]T]
 	// page: 当前页码
 	Page int `json:"page" example:"1"`
@@ -19,3 +18,6 @@ type HttpPageResponse[T any] struct {
 	// total: 总条数
 	Total int64 `json:"total" example:"50"`
 }
+
+// 响应为空时的结构体
+type Empty struct{}

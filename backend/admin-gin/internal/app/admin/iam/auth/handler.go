@@ -8,65 +8,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Handler struct {
-	service Service
+type handler struct {
+	se service
 }
 
-func NewHandler(service Service) *Handler {
-	return &Handler{service: service}
-}
-
-// @Summary		用户注册
-// @Description	使用用户名密码进行注册
-// @Tags			Auth
-// @Accept			json
-// @Produce		json
-// @Param			data	body		RegisterReq					true	"注册信息"
-// @Success		200		{object}	pkghttp.HttpResponse[any]	"成功"
-// @Failure		200		{object}	pkghttp.HttpResponse[any]	"失败"
-// @Router			/admin/auth/register [post]
-func (h *Handler) Register(c *gin.Context) {
-
-	// 1. 读取接口传参
-	var req RegisterReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		pkghttp.Fail(c, http.StatusBadRequest, "参数错误")
-		return
-	}
-
-	// 2. 调用 service 层的用户注册
-	if err := h.service.Register(&req); err != nil {
-		pkghttp.Fail(c, http.StatusConflict, err.Error())
-		return
-	}
-
-	// 3. 返回成功
-	pkghttp.OK(c, gin.H{
-		"message": "用户注册成功",
-	})
-
+func newHandler(se service) *handler {
+	return &handler{se: se}
 }
 
 // @Summary		用户登录
-// @Description	使用用户名密码登录，成功后返回 token 对
+// @Description	用户名/密码登录
 // @Tags			Auth
 // @Accept			json
 // @Produce		json
-// @Param			data	body		LoginReq						true	"登录信息"
-// @Success		200		{object}	pkghttp.HttpResponse[LoginRes]	"成功"
-// @Failure		200		{object}	pkghttp.HttpResponse[any]		"失败"
+// @Param			data	body		loginReq						true	"登录参数"
+// @Success		200		{object}	pkghttp.HttpResponse[loginRes]	"登录成功"
 // @Router			/admin/auth/login [post]
-func (h *Handler) Login(c *gin.Context) {
+func (h *handler) login(c *gin.Context) {
 
 	// 1.读取接口传参
-	var req LoginReq
+	var req loginReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		pkghttp.Fail(c, http.StatusBadRequest, "参数错误")
+		pkghttp.Fail(c, http.StatusBadRequest)
 		return
 	}
 
 	// 2.调用 service 层的 login 业务
-	res, err := h.service.Login(c.Request.Context(), &req)
+	res, err := h.se.login(c.Request.Context(), &req)
 	if err != nil {
 		pkghttp.Fail(c, http.StatusUnauthorized, err.Error())
 		return
@@ -75,31 +43,80 @@ func (h *Handler) Login(c *gin.Context) {
 	pkghttp.OK(c, res)
 }
 
-// 注销
-// func (h *Handler) Logout(c *gin.Context) {
-
-// }
-
-// @Summary		刷新 Token
-// @Description	使用 refresh token 刷新访问 token，成功后返回新的 token 对
+// @Summary		用户注册
+// @Description	用户名/密码进行注册
 // @Tags			Auth
 // @Accept			json
 // @Produce		json
-// @Param			data	body		RefreshReq						true	"刷新 token 请求"
-// @Success		200		{object}	pkghttp.HttpResponse[LoginRes]	"成功"
-// @Failure		200		{object}	pkghttp.HttpResponse[any]		"失败"
+// @Param			data	body		registerReq					true	"注册参数"
+// @Success		200		{object}	pkghttp.HttpResponse[Empty]	"注册成功"
+// @Router			/admin/auth/register [post]
+func (h *handler) register(c *gin.Context) {
+
+	// 1. 读取接口传参
+	var req registerReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		pkghttp.Fail(c, http.StatusBadRequest)
+		return
+	}
+
+	// 2. 调用 service 层的用户注册
+	if err := h.se.register(&req); err != nil {
+		pkghttp.Fail(c, http.StatusConflict, err.Error())
+		return
+	}
+
+	// 3. 返回成功
+	pkghttp.OK(c, pkghttp.Empty{})
+
+}
+
+// @Summary		用户注销
+// @Description	用户注销,同时移除刷新令牌
+// @Tags			Auth
+// @Accept			json
+// @Produce		json
+// @Param			data	body		logoutReq					true	"注销参数"
+// @Success		200		{object}	pkghttp.HttpResponse[Empty]	"注销成功"
+// @Router			/admin/auth/logout [post]
+func (h *handler) logout(c *gin.Context) {
+	// 1. 参数校验
+	var logOutReq logoutReq
+	if err := c.ShouldBindJSON(&logOutReq); err != nil {
+		pkghttp.Fail(c, http.StatusBadRequest)
+		return
+	}
+
+	// 2. 调用 service 层注销业务
+	code, err := h.se.logout(c.Request.Context(), &logOutReq)
+	if err != nil {
+		pkghttp.Fail(c, code, err.Error())
+		return
+	}
+	// 3. 成功
+	pkghttp.OK(c, pkghttp.Empty{})
+
+}
+
+// @Summary		刷新令牌
+// @Description	用于短期令牌 Access_Token 续期
+// @Tags			Auth
+// @Accept			json
+// @Produce		json
+// @Param			data	body		refreshReq						true	"刷新令牌请求参数"
+// @Success		200		{object}	pkghttp.HttpResponse[loginRes]	"刷新成功"
 // @Router			/admin/auth/refresh [post]
-func (h *Handler) RefreshToken(c *gin.Context) {
+func (h *handler) refresh(c *gin.Context) {
 
 	// 1.参数校验
-	var req RefreshReq
+	var req refreshReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		pkghttp.Fail(c, http.StatusBadRequest, "参数错误")
+		pkghttp.Fail(c, http.StatusBadRequest)
 		return
 	}
 
 	// 2.调用 service 层的 refresh 业务
-	res, err := h.service.Refresh(c.Request.Context(), &req)
+	res, err := h.se.refresh(c.Request.Context(), &req)
 	if err != nil {
 		pkghttp.Fail(c, http.StatusInternalServerError, err.Error())
 		return

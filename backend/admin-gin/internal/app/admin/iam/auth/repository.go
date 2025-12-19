@@ -10,14 +10,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type Repository interface {
-	FindUserIsExist(username string) (bool, error)    // 查找用户是否存在
-	CreateUser(account *account) error                // 创建新用户
-	FindUserByName(username string) (*account, error) // 根据用户名查找用户
+type repository interface {
+	findUserIsExist(username string) (bool, error)    // 查找用户是否存在
+	createUser(account *account) error                // 创建新用户
+	findUserByName(username string) (*account, error) // 根据用户名查找用户
 
-	SetRefreshToken(ctx context.Context, uid string, token string, duration time.Duration) error // 设置刷新令牌
-	GetRefreshToken(ctx context.Context, uid string) (string, error)                             // 设置刷新令牌
-	DelRefreshToken(ctx context.Context, uid string) error                                       // 删除刷新令牌
+	setRefreshToken(ctx context.Context, uid string, token string, duration time.Duration) error // 设置刷新令牌
+	getRefreshToken(ctx context.Context, uid string) (string, error)                             // 设置刷新令牌
+	delRefreshToken(ctx context.Context, uid string) error                                       // 删除刷新令牌
 }
 
 type repo struct {
@@ -25,12 +25,12 @@ type repo struct {
 	rdb *redis.Client
 }
 
-func NewRepository(db *gorm.DB, rdb *redis.Client) Repository {
+func newRepository(db *gorm.DB, rdb *redis.Client) repository {
 	return &repo{db: db, rdb: rdb}
 }
 
 // 查找数据库是否存在该用户，true: 用户存在；false: 用户不存在
-func (r *repo) FindUserIsExist(username string) (bool, error) {
+func (r *repo) findUserIsExist(username string) (bool, error) {
 	var count int64
 	if err := r.db.Model(&user{}).Where("username = ?", username).Count(&count).Error; err != nil {
 		return false, err
@@ -39,7 +39,7 @@ func (r *repo) FindUserIsExist(username string) (bool, error) {
 }
 
 // 新增用户记录
-func (r *repo) CreateUser(account *account) error {
+func (r *repo) createUser(account *account) error {
 	m := &user{
 		UID:       account.UID,
 		Username:  account.Username,
@@ -52,7 +52,7 @@ func (r *repo) CreateUser(account *account) error {
 }
 
 // 查找用户记录
-func (r *repo) FindUserByName(username string) (*account, error) {
+func (r *repo) findUserByName(username string) (*account, error) {
 	var m user
 	if err := r.db.Where("username = ?", username).First(&m).Error; err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (r *repo) FindUserByName(username string) (*account, error) {
 }
 
 // 设置 refresh token
-func (r *repo) SetRefreshToken(ctx context.Context, uid string, token string, duration time.Duration) error {
+func (r *repo) setRefreshToken(ctx context.Context, uid string, token string, duration time.Duration) error {
 	// Key 格式建议: "模块:功能:ID" -> "auth:refresh:10086"
 	key := fmt.Sprintf("auth:refresh:%s", uid)
 
@@ -78,7 +78,7 @@ func (r *repo) SetRefreshToken(ctx context.Context, uid string, token string, du
 }
 
 // 获取 refresh token
-func (r *repo) GetRefreshToken(ctx context.Context, uid string) (string, error) {
+func (r *repo) getRefreshToken(ctx context.Context, uid string) (string, error) {
 	key := fmt.Sprintf("auth:refresh:%s", uid)
 
 	// Redis 命令: GET key
@@ -96,7 +96,7 @@ func (r *repo) GetRefreshToken(ctx context.Context, uid string) (string, error) 
 }
 
 // 删除 refresh token
-func (r *repo) DelRefreshToken(ctx context.Context, uid string) error {
+func (r *repo) delRefreshToken(ctx context.Context, uid string) error {
 	key := fmt.Sprintf("auth:refresh:%s", uid)
 	return r.rdb.Del(ctx, key).Err()
 }

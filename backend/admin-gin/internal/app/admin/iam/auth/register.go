@@ -9,9 +9,9 @@ import (
 )
 
 func Register(rg *gin.RouterGroup, db *gorm.DB, rdb *redis.Client, jt *jwt.JWT) {
-	repo := NewRepository(db, rdb)
-	svc := NewService(repo, jt)
-	h := NewHandler(svc)
+	repo := newRepository(db, rdb)
+	svc := newService(repo, jt)
+	h := newHandler(svc)
 
-	RegisterRouter(rg, h)
+	registerRouter(rg, h)
 }

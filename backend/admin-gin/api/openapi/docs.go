@@ -26,7 +26,7 @@ const docTemplate = `{
     "paths": {
         "/admin/auth/login": {
             "post": {
-                "description": "使用用户名密码登录，成功后返回 token 对",
+                "description": "用户名/密码登录",
                 "consumes": [
                     "application/json"
                 ],
@@ -39,28 +39,28 @@ const docTemplate = `{
                 "summary": "用户登录",
                 "parameters": [
                     {
-                        "description": "登录信息",
+                        "description": "登录参数",
                         "name": "data",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.LoginReq"
+                            "$ref": "#/definitions/auth.loginReq"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "失败",
+                        "description": "登录成功",
                         "schema": {
-                            "$ref": "#/definitions/http.HttpResponse-any"
+                            "$ref": "#/definitions/http.HttpResponse-auth_loginRes"
                         }
                     }
                 }
             }
         },
-        "/admin/auth/refresh": {
+        "/admin/auth/logout": {
             "post": {
-                "description": "使用 refresh token 刷新访问 token，成功后返回新的 token 对",
+                "description": "用户注销,同时移除刷新令牌",
                 "consumes": [
                     "application/json"
                 ],
@@ -70,23 +70,57 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "刷新 Token",
+                "summary": "用户注销",
                 "parameters": [
                     {
-                        "description": "刷新 token 请求",
+                        "description": "注销参数",
                         "name": "data",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.RefreshReq"
+                            "$ref": "#/definitions/auth.logoutReq"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "失败",
+                        "description": "注销成功",
                         "schema": {
-                            "$ref": "#/definitions/http.HttpResponse-any"
+                            "$ref": "#/definitions/http.HttpResponse-Empty"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/refresh": {
+            "post": {
+                "description": "用于短期令牌 Access_Token 续期",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "刷新令牌",
+                "parameters": [
+                    {
+                        "description": "刷新令牌请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.refreshReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "刷新成功",
+                        "schema": {
+                            "$ref": "#/definitions/http.HttpResponse-auth_loginRes"
                         }
                     }
                 }
@@ -94,7 +128,7 @@ const docTemplate = `{
         },
         "/admin/auth/register": {
             "post": {
-                "description": "使用用户名密码进行注册",
+                "description": "用户名/密码进行注册",
                 "consumes": [
                     "application/json"
                 ],
@@ -107,20 +141,20 @@ const docTemplate = `{
                 "summary": "用户注册",
                 "parameters": [
                     {
-                        "description": "注册信息",
+                        "description": "注册参数",
                         "name": "data",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.RegisterReq"
+                            "$ref": "#/definitions/auth.registerReq"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "失败",
+                        "description": "注册成功",
                         "schema": {
-                            "$ref": "#/definitions/http.HttpResponse-any"
+                            "$ref": "#/definitions/http.HttpResponse-Empty"
                         }
                     }
                 }
@@ -128,7 +162,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "auth.LoginReq": {
+        "auth.loginReq": {
             "type": "object",
             "required": [
                 "password",
@@ -147,19 +181,19 @@ const docTemplate = `{
                 }
             }
         },
-        "auth.LoginRes": {
+        "auth.loginRes": {
             "type": "object",
             "properties": {
                 "access_token": {
-                    "description": "访问令牌",
+                    "description": "访问令牌: 15分钟过期",
                     "type": "string"
                 },
                 "expires_at": {
-                    "description": "过期时间",
+                    "description": "过期时间：访问令牌 Access_token 过期时间(秒)",
                     "type": "integer"
                 },
                 "refresh_token": {
-                    "description": "刷新令牌",
+                    "description": "刷新令牌：7天过期",
                     "type": "string"
                 },
                 "uid": {
@@ -168,7 +202,7 @@ const docTemplate = `{
                 }
             }
         },
-        "auth.RefreshReq": {
+        "auth.logoutReq": {
             "type": "object",
             "required": [
                 "refresh_token"
@@ -180,7 +214,19 @@ const docTemplate = `{
                 }
             }
         },
-        "auth.RegisterReq": {
+        "auth.refreshReq": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "description": "刷新令牌",
+                    "type": "string"
+                }
+            }
+        },
+        "auth.registerReq": {
             "type": "object",
             "required": [
                 "password",
@@ -199,29 +245,14 @@ const docTemplate = `{
                 }
             }
         },
-        "http.HttpResponse-any": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "code: HTTP 状态码（与 net/http 保持一致）",
-                    "type": "integer",
-                    "example": 200
-                },
-                "data": {
-                    "description": "data: 响应数据（可以为空）"
-                },
-                "message": {
-                    "description": "message: 响应描述（默认可用 internal/pkg/http.StatusText(code)）",
-                    "type": "string",
-                    "example": "成功"
-                }
-            }
+        "http.Empty": {
+            "type": "object"
         },
-        "http.HttpResponse-auth_LoginRes": {
+        "http.HttpResponse-Empty": {
             "type": "object",
             "properties": {
                 "code": {
-                    "description": "code: HTTP 状态码（与 net/http 保持一致）",
+                    "description": "code: HTTP 状态码",
                     "type": "integer",
                     "example": 200
                 },
@@ -229,14 +260,37 @@ const docTemplate = `{
                     "description": "data: 响应数据（可以为空）",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/auth.LoginRes"
+                            "$ref": "#/definitions/http.Empty"
                         }
                     ]
                 },
                 "message": {
-                    "description": "message: 响应描述（默认可用 internal/pkg/http.StatusText(code)）",
+                    "description": "message: 响应描述",
                     "type": "string",
-                    "example": "成功"
+                    "example": "操作成功"
+                }
+            }
+        },
+        "http.HttpResponse-auth_loginRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "code: HTTP 状态码",
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
+                    "description": "data: 响应数据（可以为空）",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/auth.loginRes"
+                        }
+                    ]
+                },
+                "message": {
+                    "description": "message: 响应描述",
+                    "type": "string",
+                    "example": "操作成功"
                 }
             }
         }

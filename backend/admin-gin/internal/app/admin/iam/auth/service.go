@@ -5,34 +5,68 @@ import (
 	"errors"
 	"mall-api/internal/pkg/jwt"
 	"mall-api/internal/pkg/uuid"
+	"net/http"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Service interface {
-	Register(req *RegisterReq) error                                 // 注册
-	Login(ctx context.Context, req *LoginReq) (*LoginRes, error)     // 登录
-	Refresh(ctx context.Context, req *RefreshReq) (*LoginRes, error) // 刷新 token
+type service interface {
+	register(req *registerReq) error                                 // 注册
+	login(ctx context.Context, req *loginReq) (*loginRes, error)     // 登录
+	refresh(ctx context.Context, req *refreshReq) (*loginRes, error) // 刷新 token
+	logout(ctx context.Context, req *logoutReq) (int, error)         // 注销
 }
 
-type service struct {
-	repo Repository
+type svc struct {
+	repo repository
 	jt   *jwt.JWT
 }
 
-func NewService(repo Repository, jt *jwt.JWT) Service {
-	return &service{
+func newService(repo repository, jt *jwt.JWT) service {
+	return &svc{
 		repo: repo,
 		jt:   jt,
 	}
 }
 
+// 登陆
+func (s *svc) login(ctx context.Context, req *loginReq) (*loginRes, error) {
+	// 1. 查找用户
+	account, err := s.repo.findUserByName(req.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. 校验用户密码是否正确（对比 hash 与明文）
+	if err := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(req.Password)); err != nil {
+		return nil, errors.New("密码不正确")
+	}
+
+	// 3. 构建 token
+	tokenPair, err := s.jt.GenerateTokenPair(account.UID)
+	if err != nil {
+		return nil, err
+	}
+
+	// 4. 将 refresh token 存储到 redis
+	if err := s.repo.setRefreshToken(ctx, account.UID, tokenPair.RefreshToken, s.jt.GetRefreshExpire()); err != nil {
+		return nil, err
+	}
+
+	return &loginRes{
+		UID:          account.UID,
+		AccessToken:  tokenPair.AccessToken,
+		RefreshToken: tokenPair.RefreshToken,
+		ExpiresAt:    tokenPair.ExpiresAt,
+	}, nil
+}
+
 // 注册
-func (s *service) Register(req *RegisterReq) error {
+func (s *svc) register(req *registerReq) error {
 
 	// 1. 检查用户是否已存在
-	if exist, err := s.repo.FindUserIsExist(req.Username); err != nil {
+	if exist, err := s.repo.findUserIsExist(req.Username); err != nil {
 		return err
 	} else if exist {
 		return errors.New("用户已经存在")
@@ -56,46 +90,45 @@ func (s *service) Register(req *RegisterReq) error {
 		IsActive: true,
 	}
 
-	if err := s.repo.CreateUser(account); err != nil {
+	if err := s.repo.createUser(account); err != nil {
 		return err
 	}
 	return nil
 }
 
-// 登陆
-func (s *service) Login(ctx context.Context, req *LoginReq) (*LoginRes, error) {
-	// 1. 查找用户
-	account, err := s.repo.FindUserByName(req.Username)
+// 注销
+func (s *svc) logout(ctx context.Context, req *logoutReq) (int, error) {
+
+	// 1. 解析获取 UID
+	claims, err := s.jt.ParseToken(req.RefreshToken, "refresh")
 	if err != nil {
-		return nil, err
+		return http.StatusUnauthorized, err
 	}
 
-	// 2. 校验用户密码是否正确（对比 hash 与明文）
-	if err := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(req.Password)); err != nil {
-		return nil, errors.New("密码不正确")
-	}
+	// 2. 从jwt中提取UID
+	uid := claims.UID
 
-	// 3. 构建 token
-	tokenPair, err := s.jt.GenerateTokenPair(account.UID)
+	// 3. 获取 redis 中的值
+	redisRefreshToken, err := s.repo.getRefreshToken(ctx, uid)
 	if err != nil {
-		return nil, err
+		return http.StatusUnauthorized, err
 	}
 
-	// 4. 将 refresh token 存储到 redis
-	if err := s.repo.SetRefreshToken(ctx, account.UID, tokenPair.RefreshToken, s.jt.GetRefreshExpire()); err != nil {
-		return nil, err
+	// 4. 与请求返回的 refresh token 比对
+	if redisRefreshToken != req.RefreshToken {
+		return http.StatusUnauthorized, err
 	}
 
-	return &LoginRes{
-		UID:          account.UID,
-		AccessToken:  tokenPair.AccessToken,
-		RefreshToken: tokenPair.RefreshToken,
-		ExpiresAt:    tokenPair.ExpiresAt,
-	}, nil
+	// 5. 从 redis 中删除 refresh token
+	if err := s.repo.delRefreshToken(ctx, uid); err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
 }
 
 // 刷新token
-func (s *service) Refresh(ctx context.Context, req *RefreshReq) (*LoginRes, error) {
+func (s *svc) refresh(ctx context.Context, req *refreshReq) (*loginRes, error) {
 
 	// 1. 解析 refresh_token，静态校验
 	claims, err := s.jt.ParseToken(req.RefreshToken, "refresh")
@@ -113,7 +146,7 @@ func (s *service) Refresh(ctx context.Context, req *RefreshReq) (*LoginRes, erro
 	uid := claims.UID
 
 	// 4. redis 值校验
-	savedRefreshToken, err2 := s.repo.GetRefreshToken(ctx, uid)
+	savedRefreshToken, err2 := s.repo.getRefreshToken(ctx, uid)
 	if err2 != nil {
 		return nil, err2
 	}
@@ -136,12 +169,12 @@ func (s *service) Refresh(ctx context.Context, req *RefreshReq) (*LoginRes, erro
 	}
 
 	// 7. 更新 Redis
-	if err := s.repo.SetRefreshToken(ctx, uid, newRefresh, remaining); err != nil {
+	if err := s.repo.setRefreshToken(ctx, uid, newRefresh, remaining); err != nil {
 		return nil, err
 	}
 
 	// 8. 返回 签发的token信息
-	return &LoginRes{
+	return &loginRes{
 		UID:          uid,
 		AccessToken:  newAccess,
 		RefreshToken: newRefresh,

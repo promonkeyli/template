@@ -56,7 +56,7 @@ func statusTextZH(code int) string {
 
 	// 4xx: 客户端错误（请求包含错误或无法完成）
 	case http.StatusBadRequest:
-		return "错误请求"
+		return "请求参数错误"
 	case http.StatusUnauthorized:
 		return "未授权"
 	case http.StatusPaymentRequired:
