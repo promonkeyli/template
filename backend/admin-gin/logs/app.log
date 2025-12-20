@@ -1,45 +1,16 @@
-{"time":"2025-12-18T10:17:02.507486+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
-{"time":"2025-12-18T10:17:02.508022+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (3 handlers)"}
-{"time":"2025-12-18T10:17:02.508078+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*Handler).Register-fm (3 handlers)"}
-{"time":"2025-12-18T10:17:02.508095+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*Handler).Login-fm (3 handlers)"}
-{"time":"2025-12-18T10:17:02.508108+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/refresh       --> mall-api/internal/app/admin/iam/auth.(*Handler).RefreshToken-fm (3 handlers)"}
-{"time":"2025-12-18T10:17:02.508125+08:00","level":"INFO","msg":"[GIN-debug] GET    /admin/user               --> mall-api/internal/app/admin/user.(*Handler).List-fm (4 handlers)"}
-{"time":"2025-12-18T10:17:02.508138+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/user               --> mall-api/internal/app/admin/user.(*Handler).Create-fm (4 handlers)"}
-{"time":"2025-12-18T10:17:02.508151+08:00","level":"INFO","msg":"[GIN-debug] PUT    /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Update-fm (4 handlers)"}
-{"time":"2025-12-18T10:17:02.508165+08:00","level":"INFO","msg":"[GIN-debug] DELETE /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Delete-fm (4 handlers)"}
-{"time":"2025-12-18T10:19:01.869954+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
-{"time":"2025-12-18T10:19:01.870676+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (3 handlers)"}
-{"time":"2025-12-18T10:19:01.870724+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*Handler).Register-fm (3 handlers)"}
-{"time":"2025-12-18T10:19:01.870733+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*Handler).Login-fm (3 handlers)"}
-{"time":"2025-12-18T10:19:01.870741+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/refresh       --> mall-api/internal/app/admin/iam/auth.(*Handler).RefreshToken-fm (3 handlers)"}
-{"time":"2025-12-18T10:19:01.870748+08:00","level":"INFO","msg":"[GIN-debug] GET    /admin/user               --> mall-api/internal/app/admin/user.(*Handler).List-fm (4 handlers)"}
-{"time":"2025-12-18T10:19:01.870755+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/user               --> mall-api/internal/app/admin/user.(*Handler).Create-fm (4 handlers)"}
-{"time":"2025-12-18T10:19:01.870761+08:00","level":"INFO","msg":"[GIN-debug] PUT    /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Update-fm (4 handlers)"}
-{"time":"2025-12-18T10:19:01.870766+08:00","level":"INFO","msg":"[GIN-debug] DELETE /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Delete-fm (4 handlers)"}
-{"time":"2025-12-18T10:24:27.207326+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
-{"time":"2025-12-18T10:24:27.20785+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (3 handlers)"}
-{"time":"2025-12-18T10:24:27.207891+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*Handler).Register-fm (3 handlers)"}
-{"time":"2025-12-18T10:24:27.2079+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*Handler).Login-fm (3 handlers)"}
-{"time":"2025-12-18T10:24:27.207918+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/refresh       --> mall-api/internal/app/admin/iam/auth.(*Handler).RefreshToken-fm (3 handlers)"}
-{"time":"2025-12-18T10:24:27.207925+08:00","level":"INFO","msg":"[GIN-debug] GET    /admin/user               --> mall-api/internal/app/admin/user.(*Handler).List-fm (4 handlers)"}
-{"time":"2025-12-18T10:24:27.20793+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/user               --> mall-api/internal/app/admin/user.(*Handler).Create-fm (4 handlers)"}
-{"time":"2025-12-18T10:24:27.207935+08:00","level":"INFO","msg":"[GIN-debug] PUT    /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Update-fm (4 handlers)"}
-{"time":"2025-12-18T10:24:27.208212+08:00","level":"INFO","msg":"[GIN-debug] DELETE /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Delete-fm (4 handlers)"}
-{"time":"2025-12-18T10:24:59.952769+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
-{"time":"2025-12-18T10:24:59.953322+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)"}
-{"time":"2025-12-18T10:24:59.953468+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*Handler).Register-fm (4 handlers)"}
-{"time":"2025-12-18T10:24:59.953478+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*Handler).Login-fm (4 handlers)"}
-{"time":"2025-12-18T10:24:59.953487+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/refresh       --> mall-api/internal/app/admin/iam/auth.(*Handler).RefreshToken-fm (4 handlers)"}
-{"time":"2025-12-18T10:24:59.953495+08:00","level":"INFO","msg":"[GIN-debug] GET    /admin/user               --> mall-api/internal/app/admin/user.(*Handler).List-fm (5 handlers)"}
-{"time":"2025-12-18T10:24:59.953501+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/user               --> mall-api/internal/app/admin/user.(*Handler).Create-fm (5 handlers)"}
-{"time":"2025-12-18T10:24:59.953507+08:00","level":"INFO","msg":"[GIN-debug] PUT    /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Update-fm (5 handlers)"}
-{"time":"2025-12-18T10:24:59.953513+08:00","level":"INFO","msg":"[GIN-debug] DELETE /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Delete-fm (5 handlers)"}
-{"time":"2025-12-18T10:27:16.309312+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
-{"time":"2025-12-18T10:27:16.310312+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)"}
-{"time":"2025-12-18T10:27:16.310344+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*Handler).Register-fm (4 handlers)"}
-{"time":"2025-12-18T10:27:16.31035+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*Handler).Login-fm (4 handlers)"}
-{"time":"2025-12-18T10:27:16.310355+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/refresh       --> mall-api/internal/app/admin/iam/auth.(*Handler).RefreshToken-fm (4 handlers)"}
-{"time":"2025-12-18T10:27:16.31036+08:00","level":"INFO","msg":"[GIN-debug] GET    /admin/user               --> mall-api/internal/app/admin/user.(*Handler).List-fm (5 handlers)"}
-{"time":"2025-12-18T10:27:16.310366+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/user               --> mall-api/internal/app/admin/user.(*Handler).Create-fm (5 handlers)"}
-{"time":"2025-12-18T10:27:16.310381+08:00","level":"INFO","msg":"[GIN-debug] PUT    /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Update-fm (5 handlers)"}
-{"time":"2025-12-18T10:27:16.310385+08:00","level":"INFO","msg":"[GIN-debug] DELETE /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Delete-fm (5 handlers)"}
+{"time":"2025-12-20T09:04:43.062689+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
+{"time":"2025-12-20T09:04:43.063272+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)"}
+{"time":"2025-12-20T09:04:43.063331+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*handler).register-fm (4 handlers)"}
+{"time":"2025-12-20T09:04:43.063349+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*handler).login-fm (4 handlers)"}
+{"time":"2025-12-20T09:04:43.063363+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/refresh       --> mall-api/internal/app/admin/iam/auth.(*handler).refresh-fm (4 handlers)"}
+{"time":"2025-12-20T09:04:43.063377+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/logout        --> mall-api/internal/app/admin/iam/auth.(*handler).logout-fm (5 handlers)"}
+{"time":"2025-12-20T09:04:43.06339+08:00","level":"INFO","msg":"[GIN-debug] GET    /admin/user               --> mall-api/internal/app/admin/user.(*Handler).List-fm (5 handlers)"}
+{"time":"2025-12-20T09:04:43.063402+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/user               --> mall-api/internal/app/admin/user.(*Handler).Create-fm (5 handlers)"}
+{"time":"2025-12-20T09:04:43.063414+08:00","level":"INFO","msg":"[GIN-debug] PUT    /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Update-fm (5 handlers)"}
+{"time":"2025-12-20T09:04:43.063426+08:00","level":"INFO","msg":"[GIN-debug] DELETE /admin/user/:uid          --> mall-api/internal/app/admin/user.(*Handler).Delete-fm (5 handlers)"}
+{"time":"2025-12-20T09:05:53.512883+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
+{"time":"2025-12-20T09:05:53.513357+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)"}
+{"time":"2025-12-20T09:05:53.513412+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*handler).register-fm (4 handlers)"}
+{"time":"2025-12-20T09:05:53.513425+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*handler).login-fm (4 handlers)"}
+{"time":"2025-12-20T09:05:53.513435+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/refresh       --> mall-api/internal/app/admin/iam/auth.(*handler).refresh-fm (4 handlers)"}
+{"time":"2025-12-20T09:05:53.513445+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/logout        --> mall-api/internal/app/admin/iam/auth.(*handler).logout-fm (5 handlers)"}
