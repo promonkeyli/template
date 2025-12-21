@@ -1,17 +1,14 @@
-/**
- * @description: 基于Axios的请求简易封装
- */
-import axios, { type AxiosResponse } from "axios";
-import type {
-	ApiResponse,
-	IAxiosRequestConfig,
-	IInternalAxiosRequestConfig,
-} from "@/services/types"; // 导入类型扩展
-import { useAuthStore } from "@/stores/auth.ts";
+import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
+import type { IInternalAxiosRequestConfig } from "@/services/types";
+import { useAuthStore } from "@/stores/auth";
 
-const axiosInstance = axios.create({
-	baseURL: import.meta.env.VITE_API_BASE_URL,
-	timeout: 1000,
+declare const process: { env: Record<string, string> }; // process 类型声明
+
+const BASE_URL = process.env.VITE_API_BASE_URL || "";
+
+export const axiosInstance = axios.create({
+	baseURL: BASE_URL,
+	timeout: 3000,
 	headers: {
 		"Content-Type": "application/json;charset=utf-8",
 	},
@@ -20,12 +17,12 @@ const axiosInstance = axios.create({
 // -------------------------- 请求拦截器 --------------------------
 axiosInstance.interceptors.request.use(
 	(config: IInternalAxiosRequestConfig) => {
-		// 判断是否跳过鉴权，默认为false（需要鉴权）
+		// 你的自定义属性处理
 		if (config.isSkipAuth) {
 			return config;
 		}
 
-		// 添加token
+		// Zustand 在组件外使用的方式
 		const token = useAuthStore.getState().token;
 		if (token) {
 			config.headers.Authorization = `Bearer ${token.access_token}`;
@@ -39,49 +36,51 @@ axiosInstance.interceptors.request.use(
 );
 
 // -------------------------- 响应拦截器 --------------------------
-axiosInstance.interceptors.response.use((response: AxiosResponse) => {
-	const { status } = response;
-	if (status === 200 && response.data.code === 200) {
-		return response.data; // 直接返回业务数据
-	} else {
-		console.log("请求失败", response.data);
-		return Promise.reject(response.data);
-	}
-});
+axiosInstance.interceptors.response.use(
+	(response: AxiosResponse) => {
+		const { status } = response;
+		// 这里你之前的逻辑是：只要 HTTP 200 且 业务 code 200 就返回 data
+		// 注意：这意味着 customInstance 拿到的已经是 response.data (Body) 了
+		if (status === 200 && response.data.code === 200) {
+			return response.data;
+		} else {
+			console.log("请求失败", response.data);
+			return Promise.reject(response.data);
+		}
+	},
+	(error) => {
+		// 建议增加 HTTP 状态码处理 (401, 403, 500等)
+		return Promise.reject(error);
+	},
+);
+
+// -------------------------- Orval 核心适配器 --------------------------
 
 /**
- * @description: 请求函数: 为了ts考虑, 提供更具体的类型
+ * Orval 调用的自定义请求函数
+ * Orval 会把 swagger 中的 url, method, params 等参数传给 config
+ * 把额外的 options (如 signal) 传给 options
  */
-const request = {
-	request: <T = any>(config: IAxiosRequestConfig): Promise<ApiResponse<T>> => {
-		return axiosInstance.request<ApiResponse<T>>(config) as any;
-	},
-	get: <T = any>(
-		url: string,
-		config?: IAxiosRequestConfig,
-	): Promise<ApiResponse<T>> => {
-		return axiosInstance.get<ApiResponse<T>>(url, config) as any;
-	},
-	post: <T = any>(
-		url: string,
-		data?: any,
-		config?: IAxiosRequestConfig,
-	): Promise<ApiResponse<T>> => {
-		return axiosInstance.post<ApiResponse<T>>(url, data, config) as any;
-	},
-	put: <T = any>(
-		url: string,
-		data?: any,
-		config?: IAxiosRequestConfig,
-	): Promise<ApiResponse<T>> => {
-		return axiosInstance.put<ApiResponse<T>>(url, data, config) as any;
-	},
-	delete: <T = any>(
-		url: string,
-		config?: IAxiosRequestConfig,
-	): Promise<ApiResponse<T>> => {
-		return axiosInstance.delete<ApiResponse<T>>(url, config) as any;
-	},
+export const customInstance = <T>(
+	config: AxiosRequestConfig,
+	options?: AxiosRequestConfig,
+): Promise<T> => {
+	const source = axios.CancelToken.source();
+
+	const promise = axiosInstance({
+		...config,
+		...options,
+		cancelToken: source.token,
+	}).then((res) => res); // 拦截器里已经返回了 response.data，所以这里直接返回 res 即可
+
+	// @ts-ignore 添加 cancel 方法，以支持 React Query 的取消请求功能
+	promise.cancel = () => {
+		source.cancel("Query was cancelled");
+	};
+
+	// 强制转换为 T，因为拦截器已经解包了 Response
+	return promise as Promise<T>;
 };
 
-export default request;
+// 你可以保留这个类型导出，或者让 Orval 自动生成
+export type ErrorType<Error> = AxiosResponse<Error>;

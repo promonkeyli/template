@@ -22,9 +22,11 @@ export default function Login() {
     e.preventDefault()
     setError(null)
 
-    loginMutation.mutate(formData, {
+    loginMutation.mutate({ data: formData }, {
       onError: (error) => {
-        setError(error.message)
+        // ErrorType 是 AxiosResponse 类型，错误信息可能在 data.message 中
+        const errorMessage = (error as any)?.data?.message || (error as any)?.message || '登录失败，请重试'
+        setError(errorMessage)
       }
     })
   }
