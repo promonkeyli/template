@@ -5,13 +5,13 @@
  * Mall API 服务接口文档
  * OpenAPI spec version: 1.0
  */
-import type { AuthLoginRes } from './authLoginRes';
+import type { AuthLoginRes } from "./authLoginRes";
 
 export interface HttpHttpResponseAuthLoginRes {
-  /** code: HTTP 状态码 */
-  code?: number;
-  /** data: 响应数据（可以为空） */
-  data?: AuthLoginRes;
-  /** message: 响应描述 */
-  message?: string;
+	/** code: HTTP 状态码 */
+	code?: number;
+	/** data: 响应数据（可以为空） */
+	data?: AuthLoginRes;
+	/** message: 响应描述 */
+	message?: string;
 }

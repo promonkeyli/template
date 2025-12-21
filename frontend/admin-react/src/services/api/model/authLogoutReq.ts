@@ -7,6 +7,6 @@
  */
 
 export interface AuthLogoutReq {
-  /** 刷新令牌 */
-  refresh_token: string;
+	/** 刷新令牌 */
+	refresh_token: string;
 }

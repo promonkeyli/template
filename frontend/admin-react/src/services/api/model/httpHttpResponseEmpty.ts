@@ -5,13 +5,13 @@
  * Mall API 服务接口文档
  * OpenAPI spec version: 1.0
  */
-import type { HttpEmpty } from './httpEmpty';
+import type { HttpEmpty } from "./httpEmpty";
 
 export interface HttpHttpResponseEmpty {
-  /** code: HTTP 状态码 */
-  code?: number;
-  /** data: 响应数据（可以为空） */
-  data?: HttpEmpty;
-  /** message: 响应描述 */
-  message?: string;
+	/** code: HTTP 状态码 */
+	code?: number;
+	/** data: 响应数据（可以为空） */
+	data?: HttpEmpty;
+	/** message: 响应描述 */
+	message?: string;
 }

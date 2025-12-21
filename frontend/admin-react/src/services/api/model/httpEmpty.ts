@@ -6,4 +6,6 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface HttpEmpty { [key: string]: unknown }
+export interface HttpEmpty {
+	[key: string]: unknown;
+}

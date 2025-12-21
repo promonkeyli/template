@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0
  */
 
-export * from './authLoginReq';
-export * from './authLoginRes';
-export * from './authLogoutReq';
-export * from './authRefreshReq';
-export * from './authRegisterReq';
-export * from './httpEmpty';
-export * from './httpHttpResponseAuthLoginRes';
-export * from './httpHttpResponseEmpty';
+export * from "./authLoginReq";
+export * from "./authLoginRes";
+export * from "./authLogoutReq";
+export * from "./authRefreshReq";
+export * from "./authRegisterReq";
+export * from "./httpEmpty";
+export * from "./httpHttpResponseAuthLoginRes";
+export * from "./httpHttpResponseEmpty";

@@ -7,12 +7,12 @@
  */
 
 export interface AuthLoginRes {
-  /** 访问令牌: 15分钟过期 */
-  access_token?: string;
-  /** 过期时间：访问令牌 Access_token 过期时间(秒) */
-  expires_at?: number;
-  /** 刷新令牌：7天过期 */
-  refresh_token?: string;
-  /** 用户UID */
-  uid?: string;
+	/** 访问令牌: 15分钟过期 */
+	access_token?: string;
+	/** 过期时间：访问令牌 Access_token 过期时间(秒) */
+	expires_at?: number;
+	/** 刷新令牌：7天过期 */
+	refresh_token?: string;
+	/** 用户UID */
+	uid?: string;
 }
