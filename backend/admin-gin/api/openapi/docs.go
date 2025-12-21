@@ -37,6 +37,7 @@ const docTemplate = `{
                     "Auth"
                 ],
                 "summary": "用户登录",
+                "operationId": "login",
                 "parameters": [
                     {
                         "description": "登录参数",
@@ -71,6 +72,7 @@ const docTemplate = `{
                     "Auth"
                 ],
                 "summary": "用户注销",
+                "operationId": "logout",
                 "parameters": [
                     {
                         "description": "注销参数",
@@ -105,6 +107,7 @@ const docTemplate = `{
                     "Auth"
                 ],
                 "summary": "刷新令牌",
+                "operationId": "refreshToken",
                 "parameters": [
                     {
                         "description": "刷新令牌请求参数",
@@ -139,6 +142,7 @@ const docTemplate = `{
                     "Auth"
                 ],
                 "summary": "用户注册",
+                "operationId": "register",
                 "parameters": [
                     {
                         "description": "注册参数",

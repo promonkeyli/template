@@ -110,6 +110,7 @@ paths:
       consumes:
       - application/json
       description: 用户名/密码登录
+      operationId: login
       parameters:
       - description: 登录参数
         in: body
@@ -132,6 +133,7 @@ paths:
       consumes:
       - application/json
       description: 用户注销,同时移除刷新令牌
+      operationId: logout
       parameters:
       - description: 注销参数
         in: body
@@ -154,6 +156,7 @@ paths:
       consumes:
       - application/json
       description: 用于短期令牌 Access_Token 续期
+      operationId: refreshToken
       parameters:
       - description: 刷新令牌请求参数
         in: body
@@ -176,6 +179,7 @@ paths:
       consumes:
       - application/json
       description: 用户名/密码进行注册
+      operationId: register
       parameters:
       - description: 注册参数
         in: body

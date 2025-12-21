@@ -18,6 +18,7 @@ func newHandler(se service) *handler {
 
 // @Summary		用户登录
 // @Description	用户名/密码登录
+// @ID				login
 // @Tags			Auth
 // @Accept			json
 // @Produce		json
@@ -45,6 +46,7 @@ func (h *handler) login(c *gin.Context) {
 
 // @Summary		用户注册
 // @Description	用户名/密码进行注册
+// @ID				register
 // @Tags			Auth
 // @Accept			json
 // @Produce		json
@@ -73,6 +75,7 @@ func (h *handler) register(c *gin.Context) {
 
 // @Summary		用户注销
 // @Description	用户注销,同时移除刷新令牌
+// @ID				logout
 // @Tags			Auth
 // @Accept			json
 // @Produce		json
@@ -100,6 +103,7 @@ func (h *handler) logout(c *gin.Context) {
 
 // @Summary		刷新令牌
 // @Description	用于短期令牌 Access_Token 续期
+// @ID				refreshToken
 // @Tags			Auth
 // @Accept			json
 // @Produce		json
