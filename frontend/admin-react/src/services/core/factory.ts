@@ -2,62 +2,59 @@
  * @description: axios 工厂函数，按配置生成 axios 实例
  */
 
-import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
+import axios, {
+	type AxiosInstance,
+	type AxiosRequestConfig,
+	type AxiosResponse,
+	type InternalAxiosRequestConfig,
+} from "axios";
+
+// 定义拦截器回调类型
+type RequestInterceptor = (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>;
+type ResponseSuccessInterceptor = (response: AxiosResponse) => any; // 允许返回解包后的数据
+type ResponseErrorInterceptor = (error: any) => any;
 
 export interface CreateAFOptions extends AxiosRequestConfig {
-	// 请求白名单，不需要鉴权的
-	whiteList?: string[];
-	// token
-	token?: string;
+	// 允许调用者传入自定义拦截器
+	interceptors?: {
+		request?: RequestInterceptor;
+		requestError?: ResponseErrorInterceptor;
+		response?: {
+			success?: ResponseSuccessInterceptor;
+			error?: ResponseErrorInterceptor;
+		};
+	};
 }
 
 /**
- * @description Axios 实例工厂函数
+ * @description 通用 Axios 实例工厂
+ * 只负责创建实例和注册拦截器，不包含具体业务逻辑
  */
 export function createAxiosFactory(options: CreateAFOptions = {}): AxiosInstance {
-	const { whiteList = [], token, ...axiosConfig } = options;
+	const { interceptors, ...axiosConfig } = options;
 
 	// 1. 基础配置
 	const instance = axios.create({
-		timeout: 60000, // axios timeout 中 使用ms，1000ms === 1s，默认设置1min
+		timeout: 60000,
 		headers: { "Content-Type": "application/json" },
-		...axiosConfig, // 合并传入的 baseURL 等配置
+		...axiosConfig,
 	});
 
-	// 2. 公共的请求拦截器配置,主要是 筛选请求白名单
-	instance.interceptors.request.use(
-		(request) => {
-			if (request?.url && whiteList.includes(request?.url)) {
-				return request;
-			}
-			if (token) {
-				// 标准 Authorization 授权字段 添加
-				request.headers.Authorization = `Bearer ${token}`;
-			}
-			return request;
-		},
-		(error) => {
-			console.log("请求参数错误", error);
-			return Promise.reject(error);
-		},
-	);
+	// 2. 注册请求拦截器
+	if (interceptors?.request) {
+		instance.interceptors.request.use(
+			interceptors.request,
+			interceptors.requestError || ((error) => Promise.reject(error))
+		);
+	}
 
-	// 3. 公共的响应拦截器配置
-	instance.interceptors.response.use(
-		(response) => {
-			const { status } = response;
-			// 只要 HTTP 200 且 业务 code 200 就返回 data
-			if (status === 200 && response.data.code === 200) {
-				return response.data;
-			} else {
-				console.log("请求失败", response.data);
-				return Promise.reject(response.data);
-			}
-		},
-		(error) => {
-			return Promise.reject(error);
-		},
-	);
+	// 3. 注册响应拦截器
+	if (interceptors?.response) {
+		instance.interceptors.response.use(
+			interceptors.response.success || ((res) => res), // 默认原样返回
+			interceptors.response.error || ((err) => Promise.reject(err)) // 默认直接抛出
+		);
+	}
 
 	return instance;
 }

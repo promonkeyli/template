@@ -7,12 +7,15 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!src/router.ts"]
+		"includes": [
+			"**",
+			"!src/router.ts"
+		]
 	},
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "tab",
-		"lineWidth": 120
+		"lineWidth": 150
 	},
 	"linter": {
 		"enabled": true,

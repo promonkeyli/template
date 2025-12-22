@@ -8,8 +8,6 @@
 
 export * from "./authLoginReq";
 export * from "./authLoginRes";
-export * from "./authLogoutReq";
-export * from "./authRefreshReq";
 export * from "./authRegisterReq";
 export * from "./httpEmpty";
 export * from "./httpHttpResponseAuthLoginRes";

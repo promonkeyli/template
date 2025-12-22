@@ -17,7 +17,6 @@ export const useLogin = () => {
 				if (data) {
 					setToken({
 						access_token: data.access_token || "",
-						refresh_token: data.refresh_token || "",
 						expires_at: data.expires_at || 0,
 						uid: data.uid || "",
 					});
