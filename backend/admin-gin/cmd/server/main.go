@@ -16,7 +16,12 @@
 //	@securityDefinitions.apikey	BearerAuth
 //	@in							header
 //	@name						Authorization
-//	@description				Type "Bearer" followed by a space and JWT token.
+//	@description				输入格式: Bearer <token>
+
+//	@securityDefinitions.apikey	CookieAuth
+//	@in							header
+//	@name						Cookie
+//	@description				浏览器自动处理。手动调试请填写：refresh_token=xxxx
 
 package main
 
@@ -54,7 +59,7 @@ func main() {
 	}
 
 	// 4.注入依赖
-	boot.Register(app.Ge, app.Db, app.Rdb, app.Jt)
+	boot.Register(app.Ge, app.Db, app.Rdb, app.Jt, app.Cm)
 
 	// 5. 端口打印
 	fmt.Printf("【%s】service is running on port: %d \n\n", strings.ToUpper(cfg.App.Name), cfg.Server.Port)

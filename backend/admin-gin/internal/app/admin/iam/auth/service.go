@@ -12,10 +12,10 @@ import (
 )
 
 type service interface {
-	register(req *registerReq) error                                 // 注册
-	login(ctx context.Context, req *loginReq) (*loginRes, error)     // 登录
-	refresh(ctx context.Context, req *refreshReq) (*loginRes, error) // 刷新 token
-	logout(ctx context.Context, req *logoutReq) (int, error)         // 注销
+	register(req *registerReq) error                                     // 注册
+	login(ctx context.Context, req *loginReq) (*loginRes, error)         // 登录
+	refresh(ctx context.Context, refreshToken string) (*loginRes, error) // 刷新 token
+	logout(ctx context.Context, refreshToken string) (int, error)        // 注销
 }
 
 type svc struct {
@@ -57,8 +57,8 @@ func (s *svc) login(ctx context.Context, req *loginReq) (*loginRes, error) {
 	return &loginRes{
 		UID:          account.UID,
 		AccessToken:  tokenPair.AccessToken,
-		RefreshToken: tokenPair.RefreshToken,
 		ExpiresAt:    tokenPair.ExpiresAt,
+		RefreshToken: tokenPair.RefreshToken,
 	}, nil
 }
 
@@ -97,10 +97,10 @@ func (s *svc) register(req *registerReq) error {
 }
 
 // 注销
-func (s *svc) logout(ctx context.Context, req *logoutReq) (int, error) {
+func (s *svc) logout(ctx context.Context, refreshToken string) (int, error) {
 
 	// 1. 解析获取 UID
-	claims, err := s.jt.ParseToken(req.RefreshToken, "refresh")
+	claims, err := s.jt.ParseToken(refreshToken, "refresh")
 	if err != nil {
 		return http.StatusUnauthorized, err
 	}
@@ -115,7 +115,7 @@ func (s *svc) logout(ctx context.Context, req *logoutReq) (int, error) {
 	}
 
 	// 4. 与请求返回的 refresh token 比对
-	if redisRefreshToken != req.RefreshToken {
+	if redisRefreshToken != refreshToken {
 		return http.StatusUnauthorized, err
 	}
 
@@ -128,10 +128,10 @@ func (s *svc) logout(ctx context.Context, req *logoutReq) (int, error) {
 }
 
 // 刷新token
-func (s *svc) refresh(ctx context.Context, req *refreshReq) (*loginRes, error) {
+func (s *svc) refresh(ctx context.Context, refreshToken string) (*loginRes, error) {
 
 	// 1. 解析 refresh_token，静态校验
-	claims, err := s.jt.ParseToken(req.RefreshToken, "refresh")
+	claims, err := s.jt.ParseToken(refreshToken, "refresh")
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func (s *svc) refresh(ctx context.Context, req *refreshReq) (*loginRes, error) {
 	}
 
 	// 5. redis 取出来的token和前端传的 refresh token进行对比
-	if savedRefreshToken != req.RefreshToken {
+	if savedRefreshToken != refreshToken {
 		return nil, errors.New("刷新token无效")
 	}
 
@@ -175,9 +175,8 @@ func (s *svc) refresh(ctx context.Context, req *refreshReq) (*loginRes, error) {
 
 	// 8. 返回 签发的token信息
 	return &loginRes{
-		UID:          uid,
-		AccessToken:  newAccess,
-		RefreshToken: newRefresh,
-		ExpiresAt:    time.Now().Add(s.jt.GetAccessExpire()).Unix(),
+		UID:         uid,
+		AccessToken: newAccess,
+		ExpiresAt:   time.Now().Add(s.jt.GetAccessExpire()).Unix(),
 	}, nil
 }

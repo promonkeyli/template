@@ -13,7 +13,7 @@ func Cors() gin.HandlerFunc {
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},           // 允许的请求方法
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"}, // 允许的请求头
 		ExposeHeaders:    []string{"Content-Length"},                                    // 公开的响应头
-		AllowCredentials: true,                                                          // 允许包含凭据
+		AllowCredentials: true,                                                          // 允许包含凭据，如cookie等
 		MaxAge:           12 * time.Hour,                                                // 预检请求的缓存时间
 	})
 }

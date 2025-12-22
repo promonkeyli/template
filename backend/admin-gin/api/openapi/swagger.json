@@ -53,76 +53,6 @@
                 }
             }
         },
-        "/admin/auth/logout": {
-            "post": {
-                "description": "用户注销,同时移除刷新令牌",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "用户注销",
-                "operationId": "logout",
-                "parameters": [
-                    {
-                        "description": "注销参数",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/auth.logoutReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "注销成功",
-                        "schema": {
-                            "$ref": "#/definitions/http.HttpResponse-Empty"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/auth/refresh": {
-            "post": {
-                "description": "用于短期令牌 Access_Token 续期",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "刷新令牌",
-                "operationId": "refreshToken",
-                "parameters": [
-                    {
-                        "description": "刷新令牌请求参数",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/auth.refreshReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "刷新成功",
-                        "schema": {
-                            "$ref": "#/definitions/http.HttpResponse-auth_loginRes"
-                        }
-                    }
-                }
-            }
-        },
         "/admin/auth/register": {
             "post": {
                 "description": "用户名/密码进行注册",
@@ -153,6 +83,82 @@
                         "description": "注册成功",
                         "schema": {
                             "$ref": "#/definitions/http.HttpResponse-Empty"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/session/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "用户注销,同时移除刷新令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "用户注销",
+                "operationId": "logout",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "格式: refresh_token=xxx",
+                        "name": "Cookie",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "注销成功",
+                        "schema": {
+                            "$ref": "#/definitions/http.HttpResponse-Empty"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/session/refresh": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "用于短期令牌 Access_Token 续期",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "刷新令牌",
+                "operationId": "refreshToken",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "格式: refresh_token=xxx",
+                        "name": "Cookie",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "刷新成功",
+                        "schema": {
+                            "$ref": "#/definitions/http.HttpResponse-auth_loginRes"
                         }
                     }
                 }
@@ -190,36 +196,8 @@
                     "description": "过期时间：访问令牌 Access_token 过期时间(秒)",
                     "type": "integer"
                 },
-                "refresh_token": {
-                    "description": "刷新令牌：7天过期",
-                    "type": "string"
-                },
                 "uid": {
                     "description": "用户UID",
-                    "type": "string"
-                }
-            }
-        },
-        "auth.logoutReq": {
-            "type": "object",
-            "required": [
-                "refresh_token"
-            ],
-            "properties": {
-                "refresh_token": {
-                    "description": "刷新令牌",
-                    "type": "string"
-                }
-            }
-        },
-        "auth.refreshReq": {
-            "type": "object",
-            "required": [
-                "refresh_token"
-            ],
-            "properties": {
-                "refresh_token": {
-                    "description": "刷新令牌",
                     "type": "string"
                 }
             }
@@ -295,9 +273,15 @@
     },
     "securityDefinitions": {
         "BearerAuth": {
-            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "description": "输入格式: Bearer \u003ctoken\u003e",
             "type": "apiKey",
             "name": "Authorization",
+            "in": "header"
+        },
+        "CookieAuth": {
+            "description": "浏览器自动处理。手动调试请填写：refresh_token=xxxx",
+            "type": "apiKey",
+            "name": "Cookie",
             "in": "header"
         }
     }

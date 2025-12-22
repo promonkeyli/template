@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"mall-api/configs"
+	"mall-api/internal/pkg/cookie"
 	"mall-api/internal/pkg/database"
 	"mall-api/internal/pkg/jwt"
 	"mall-api/internal/pkg/logger"
@@ -24,6 +25,7 @@ type App struct {
 	Jt  *jwt.JWT
 	Ge  *gin.Engine
 	Se  *http.Server
+	Cm  *cookie.CookieManager
 }
 
 func NewApp(cfg *configs.Config) (*App, error) {
@@ -97,7 +99,19 @@ func NewApp(cfg *configs.Config) (*App, error) {
 		WriteTimeout: time.Duration(cfg.Server.WriteTimeout) * time.Second, // 写入响应的最大请求时间
 	}
 
-	// 8. 构造 app
+	// 8. 构造 gin cookie 管理：主要是 refresh token cookie
+	cookiePkgCfg := cookie.CookieConfig{
+		Name:     "refresh_token",
+		Path:     "/admin/auth/session", // auth 模块下session路由携带 refresh_token cookie
+		Domain:   "",
+		MaxAge:   cfg.JWT.RefreshExpire,
+		Secure:   false,
+		HttpOnly: true,
+		SameSite: "Lax",
+	}
+	cm := cookie.NewCookieManager(cookiePkgCfg)
+
+	// 9. 构造 app
 	app := &App{
 		Log: log,
 		Db:  db,
@@ -105,6 +119,7 @@ func NewApp(cfg *configs.Config) (*App, error) {
 		Jt:  jt,
 		Ge:  ge,
 		Se:  se,
+		Cm:  cm,
 	}
 	return app, nil
 }

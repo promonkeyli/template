@@ -22,28 +22,9 @@ definitions:
       expires_at:
         description: 过期时间：访问令牌 Access_token 过期时间(秒)
         type: integer
-      refresh_token:
-        description: 刷新令牌：7天过期
-        type: string
       uid:
         description: 用户UID
         type: string
-    type: object
-  auth.logoutReq:
-    properties:
-      refresh_token:
-        description: 刷新令牌
-        type: string
-    required:
-    - refresh_token
-    type: object
-  auth.refreshReq:
-    properties:
-      refresh_token:
-        description: 刷新令牌
-        type: string
-    required:
-    - refresh_token
     type: object
   auth.registerReq:
     properties:
@@ -128,52 +109,6 @@ paths:
       summary: 用户登录
       tags:
       - Auth
-  /admin/auth/logout:
-    post:
-      consumes:
-      - application/json
-      description: 用户注销,同时移除刷新令牌
-      operationId: logout
-      parameters:
-      - description: 注销参数
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/auth.logoutReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 注销成功
-          schema:
-            $ref: '#/definitions/http.HttpResponse-Empty'
-      summary: 用户注销
-      tags:
-      - Auth
-  /admin/auth/refresh:
-    post:
-      consumes:
-      - application/json
-      description: 用于短期令牌 Access_Token 续期
-      operationId: refreshToken
-      parameters:
-      - description: 刷新令牌请求参数
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/auth.refreshReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 刷新成功
-          schema:
-            $ref: '#/definitions/http.HttpResponse-auth_loginRes'
-      summary: 刷新令牌
-      tags:
-      - Auth
   /admin/auth/register:
     post:
       consumes:
@@ -197,10 +132,63 @@ paths:
       summary: 用户注册
       tags:
       - Auth
+  /admin/auth/session/logout:
+    post:
+      consumes:
+      - application/json
+      description: 用户注销,同时移除刷新令牌
+      operationId: logout
+      parameters:
+      - description: '格式: refresh_token=xxx'
+        in: header
+        name: Cookie
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 注销成功
+          schema:
+            $ref: '#/definitions/http.HttpResponse-Empty'
+      security:
+      - BearerAuth: []
+      summary: 用户注销
+      tags:
+      - Auth
+  /admin/auth/session/refresh:
+    post:
+      consumes:
+      - application/json
+      description: 用于短期令牌 Access_Token 续期
+      operationId: refreshToken
+      parameters:
+      - description: '格式: refresh_token=xxx'
+        in: header
+        name: Cookie
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 刷新成功
+          schema:
+            $ref: '#/definitions/http.HttpResponse-auth_loginRes'
+      security:
+      - CookieAuth: []
+      summary: 刷新令牌
+      tags:
+      - Auth
 securityDefinitions:
   BearerAuth:
-    description: Type "Bearer" followed by a space and JWT token.
+    description: '输入格式: Bearer <token>'
     in: header
     name: Authorization
+    type: apiKey
+  CookieAuth:
+    description: 浏览器自动处理。手动调试请填写：refresh_token=xxxx
+    in: header
+    name: Cookie
     type: apiKey
 swagger: "2.0"

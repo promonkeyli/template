@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 
+	"mall-api/internal/pkg/cookie"
 	pkghttp "mall-api/internal/pkg/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,10 +11,11 @@ import (
 
 type handler struct {
 	se service
+	cm *cookie.CookieManager
 }
 
-func newHandler(se service) *handler {
-	return &handler{se: se}
+func newHandler(se service, cm *cookie.CookieManager) *handler {
+	return &handler{se: se, cm: cm}
 }
 
 // @Summary		用户登录
@@ -40,6 +42,9 @@ func (h *handler) login(c *gin.Context) {
 		pkghttp.Fail(c, http.StatusUnauthorized, err.Error())
 		return
 	}
+
+	// 3. gin 设置 refresh cookie
+	h.cm.Set(c, res.RefreshToken)
 
 	pkghttp.OK(c, res)
 }
@@ -75,28 +80,34 @@ func (h *handler) register(c *gin.Context) {
 
 // @Summary		用户注销
 // @Description	用户注销,同时移除刷新令牌
+// @Security		BearerAuth
 // @ID				logout
 // @Tags			Auth
 // @Accept			json
 // @Produce		json
-// @Param			data	body		logoutReq					true	"注销参数"
+// @Param			Cookie	header		string						true	"格式: refresh_token=xxx"
 // @Success		200		{object}	pkghttp.HttpResponse[Empty]	"注销成功"
-// @Router			/admin/auth/logout [post]
+// @Router			/admin/auth/session/logout [post]
 func (h *handler) logout(c *gin.Context) {
-	// 1. 参数校验
-	var logOutReq logoutReq
-	if err := c.ShouldBindJSON(&logOutReq); err != nil {
+
+	// 1.参数 refresh_token, 从 cookie 中取值
+	refreshToken, err := h.cm.Get(c)
+	if err != nil {
 		pkghttp.Fail(c, http.StatusBadRequest)
 		return
 	}
 
 	// 2. 调用 service 层注销业务
-	code, err := h.se.logout(c.Request.Context(), &logOutReq)
+	code, err := h.se.logout(c.Request.Context(), refreshToken)
 	if err != nil {
 		pkghttp.Fail(c, code, err.Error())
 		return
 	}
-	// 3. 成功
+
+	// 3. 清除 refresh_token cookie
+	h.cm.Remove(c)
+
+	// 4. 成功
 	pkghttp.OK(c, pkghttp.Empty{})
 
 }
@@ -104,23 +115,24 @@ func (h *handler) logout(c *gin.Context) {
 // @Summary		刷新令牌
 // @Description	用于短期令牌 Access_Token 续期
 // @ID				refreshToken
+// @Security		CookieAuth
 // @Tags			Auth
 // @Accept			json
 // @Produce		json
-// @Param			data	body		refreshReq						true	"刷新令牌请求参数"
+// @Param			Cookie	header		string							true	"格式: refresh_token=xxx"
 // @Success		200		{object}	pkghttp.HttpResponse[loginRes]	"刷新成功"
-// @Router			/admin/auth/refresh [post]
+// @Router			/admin/auth/session/refresh [post]
 func (h *handler) refresh(c *gin.Context) {
 
-	// 1.参数校验
-	var req refreshReq
-	if err := c.ShouldBindJSON(&req); err != nil {
+	// 1.参数 refresh_token, 从 cookie 中取值
+	refreshToken, err := h.cm.Get(c)
+	if err != nil {
 		pkghttp.Fail(c, http.StatusBadRequest)
 		return
 	}
 
 	// 2.调用 service 层的 refresh 业务
-	res, err := h.se.refresh(c.Request.Context(), &req)
+	res, err := h.se.refresh(c.Request.Context(), refreshToken)
 	if err != nil {
 		pkghttp.Fail(c, http.StatusInternalServerError, err.Error())
 		return

@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"mall-api/internal/pkg/cookie"
 	"mall-api/internal/pkg/jwt"
 
 	"github.com/gin-gonic/gin"
@@ -8,10 +9,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func Register(rg *gin.RouterGroup, db *gorm.DB, rdb *redis.Client, jt *jwt.JWT) {
+func Register(rg *gin.RouterGroup, db *gorm.DB, rdb *redis.Client, jt *jwt.JWT, ck *cookie.CookieManager) {
 	repo := newRepository(db, rdb)
 	svc := newService(repo, jt)
-	h := newHandler(svc)
+	h := newHandler(svc, ck)
 
 	registerRouter(rg, h)
 }

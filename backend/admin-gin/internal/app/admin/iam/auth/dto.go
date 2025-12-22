@@ -6,20 +6,12 @@ type loginReq struct {
 }
 
 type loginRes struct {
-	UID          string `json:"uid"`           // 用户UID
-	AccessToken  string `json:"access_token"`  // 访问令牌: 15分钟过期
-	RefreshToken string `json:"refresh_token"` // 刷新令牌：7天过期
-	ExpiresAt    int64  `json:"expires_at"`    // 过期时间：访问令牌 Access_token 过期时间(秒)
+	UID          string `json:"uid"`                    // 用户UID
+	AccessToken  string `json:"access_token"`           // 访问令牌: 15分钟过期
+	ExpiresAt    int64  `json:"expires_at"`             // 过期时间：访问令牌 Access_token 过期时间(秒)
+	RefreshToken string `json:"-" swaggerignore:"true"` // 刷新令牌不返回前端,JSON 转换也不转换该字段，该字段只在/admin/auth/refresh 接口cookie中携带，还需要配置必要的安全设置
 }
 
 type registerReq struct {
 	loginReq
-}
-
-type refreshReq struct {
-	RefreshToken string `json:"refresh_token" binding:"required"` // 刷新令牌
-}
-
-type logoutReq struct {
-	refreshReq
 }
