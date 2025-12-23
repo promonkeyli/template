@@ -1,24 +1,18 @@
 package user
 
 import (
+	"mall-api/internal/pkg/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterRouter(r *gin.RouterGroup, handlers *Handler) {
-
-	// userGroup := r.Group("/user")
-	// userGroup.Use(middleware.JWT())
-	// {
-	// 	// user 列表
-	// 	userGroup.GET("", handlers.List)
-
-	// 	// user 新增
-	// 	userGroup.POST("", handlers.Create)
-
-	// 	// user 更新（按 UID）
-	// 	userGroup.PUT("/:uid", handlers.Update)
-
-	// 	// user 删除（按 UID）
-	// 	userGroup.DELETE("/:uid", handlers.Delete)
-	// }
+	ug := r.Group("/user")
+	ug.Use(middleware.JWT())
+	{
+		ug.GET("", handlers.List)
+		// ug.POST("", handlers.Create)
+		// ug.PUT("/:id", handlers.Update)
+		// ug.DELETE("/:id", handlers.Delete)
+	}
 }

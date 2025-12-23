@@ -72,6 +72,65 @@ definitions:
         example: 操作成功
         type: string
     type: object
+  http.HttpResponse-http_PageRes-user_listRes:
+    properties:
+      code:
+        description: 'code: HTTP 状态码'
+        example: 200
+        type: integer
+      data:
+        allOf:
+        - $ref: '#/definitions/http.PageRes-user_listRes'
+        description: 'data: 响应数据（可以为空）'
+      message:
+        description: 'message: 响应描述'
+        example: 操作成功
+        type: string
+    type: object
+  http.PageRes-user_listRes:
+    properties:
+      list:
+        description: 列表
+        items:
+          $ref: '#/definitions/user.listRes'
+        type: array
+      page:
+        description: 当前页码
+        example: 1
+        type: integer
+      size:
+        description: 分页大小
+        example: 10
+        type: integer
+      total:
+        description: 总数
+        example: 50
+        type: integer
+    type: object
+  user.listRes:
+    properties:
+      created_at:
+        description: '* 创建时间 (JSON会自动格式化为 RFC3339 字符串)'
+        type: string
+      email:
+        description: '* 邮箱'
+        type: string
+      id:
+        description: '* ID (对应数据库的 UID) - 前端通常习惯叫 id'
+        type: string
+      is_active:
+        description: '* 账号状态'
+        type: boolean
+      role:
+        description: '* 角色标识'
+        type: string
+      updated_at:
+        description: '* 更新时间'
+        type: string
+      username:
+        description: '* 登录用户名'
+        type: string
+    type: object
 host: localhost:8081
 info:
   contact:
@@ -180,6 +239,46 @@ paths:
       summary: 刷新令牌
       tags:
       - Auth
+  /admin/user:
+    get:
+      consumes:
+      - application/json
+      description: 支持分页以及条件查询
+      operationId: listUser
+      parameters:
+      - description: 关键字：多字段综合搜索， email/username/uid
+        in: query
+        name: keyword
+        type: string
+      - description: 当前页码，默认 1
+        example: 1
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - description: 角色：枚举
+        in: query
+        name: role
+        type: string
+      - description: 每页数量，默认 10，最大 100
+        example: 10
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            $ref: '#/definitions/http.HttpResponse-http_PageRes-user_listRes'
+      security:
+      - BearerAuth: []
+      summary: 获取用户列表
+      tags:
+      - User
 securityDefinitions:
   BearerAuth:
     description: '输入格式: Bearer <token>'

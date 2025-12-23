@@ -28,7 +28,7 @@ func IsValidationError(err error) bool {
 
 type Service interface {
 	// List 分页查询后台用户列表
-	List(ctx context.Context, req *ReadReq) ([]ReadRes, int, error)
+	List(ctx context.Context, req *listReq) ([]listRes, int, error)
 	// Create 创建后台用户
 	Create(ctx context.Context, req *CreateReq) error
 	// Update 按 UID 更新后台用户（邮箱/角色/启用状态）
@@ -45,7 +45,7 @@ func NewService(repo Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) List(ctx context.Context, req *ReadReq) ([]ReadRes, int, error) {
+func (s *service) List(ctx context.Context, req *listReq) ([]listRes, int, error) {
 	page := req.GetPage()
 	size := req.GetPageSize()
 
@@ -54,9 +54,9 @@ func (s *service) List(ctx context.Context, req *ReadReq) ([]ReadRes, int, error
 		return nil, 0, err
 	}
 
-	out := make([]ReadRes, 0, len(users))
+	out := make([]listRes, 0, len(users))
 	for _, u := range users {
-		out = append(out, ReadRes{
+		out = append(out, listRes{
 			ID:        u.UID,
 			Username:  u.Username,
 			Email:     u.Email,

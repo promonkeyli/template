@@ -5,8 +5,45 @@ import (
 	"time"
 )
 
+// 【获取用户列表】查询参数
+type listReq struct {
+
+	// 分页请求结构体复用
+	http.HttpPageRequest
+
+	// 角色：枚举
+	Role string `form:"role"`
+
+	// 关键字：多字段综合搜索， email/username/uid
+	Keyword string `form:"keyword"`
+}
+
+// 【获取用户列表】响应体
+type listRes struct {
+
+	/** ID (对应数据库的 UID) - 前端通常习惯叫 id */
+	ID string `json:"id"`
+
+	/** 登录用户名 */
+	Username string `json:"username"`
+
+	/** 邮箱 */
+	Email string `json:"email"`
+
+	/** 角色标识 */
+	Role string `json:"role"`
+
+	/** 账号状态 */
+	IsActive bool `json:"is_active"`
+
+	/** 创建时间 (JSON会自动格式化为 RFC3339 字符串) */
+	CreatedAt time.Time `json:"created_at"`
+
+	/** 更新时间 */
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 // 【新增】请求体
-// swagger:model CreateReq
 type CreateReq struct {
 
 	// 必填，且通常有长度限制
@@ -23,7 +60,6 @@ type CreateReq struct {
 }
 
 // 【新增】响应体
-// swagger:model CreateRes
 type CreateRes struct{}
 
 // 【删除】请求体
@@ -48,45 +84,4 @@ type UpdateReq struct {
 }
 
 // 【修改】响应体
-// swagger:model UpdateRes
 type UpdateRes struct{}
-
-// 【读取】请求体
-// swagger:model ReadReq
-type ReadReq struct {
-
-	// 分页请求结构体复用
-	http.HttpPageRequest
-
-	// 角色：枚举
-	Role string `form:"role"`
-
-	// 关键字：多字段综合搜索， email/username/uid
-	Keyword string `form:"keyword"`
-}
-
-// 【读取】响应体
-// swagger:model ReadRes
-type ReadRes struct {
-
-	/** ID (对应数据库的 UID) - 前端通常习惯叫 id */
-	ID string `json:"id"`
-
-	/** 登录用户名 */
-	Username string `json:"username"`
-
-	/** 邮箱 */
-	Email string `json:"email"`
-
-	/** 角色标识 */
-	Role string `json:"role"`
-
-	/** 账号状态 */
-	IsActive bool `json:"is_active"`
-
-	/** 创建时间 (JSON会自动格式化为 RFC3339 字符串) */
-	CreatedAt time.Time `json:"created_at"`
-
-	/** 更新时间 */
-	UpdatedAt time.Time `json:"updated_at"`
-}

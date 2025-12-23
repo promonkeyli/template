@@ -15,17 +15,11 @@ func OK[T any](c *gin.Context, data T) {
 	})
 }
 
-// 分页成功响应
-func OKWithPage[T any](c *gin.Context, data []T, total int64, page, size int) {
-	c.JSON(http.StatusOK, HttpPageResponse[T]{
-		HttpResponse: HttpResponse[[]T]{
-			Code:    http.StatusOK,
-			Message: StatusText(http.StatusOK),
-			Data:    data,
-		},
-		Total: total,
-		Page:  page,
-		Size:  size,
+func OKWithPage[T any](c *gin.Context, res PageRes[T]) {
+	c.JSON(http.StatusOK, HttpResponse[PageRes[T]]{
+		Code:    http.StatusOK,
+		Message: StatusText(http.StatusOK),
+		Data:    res,
 	})
 }
 

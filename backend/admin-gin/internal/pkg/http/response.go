@@ -9,14 +9,12 @@ type HttpResponse[T any] struct {
 	Data T `json:"data,omitempty"`
 }
 
-type HttpPageResponse[T any] struct {
-	HttpResponse[[]T]
-	// page: 当前页码
-	Page int `json:"page" example:"1"`
-	// size: 每页数量
-	Size int `json:"size" example:"10"`
-	// total: 总条数
-	Total int64 `json:"total" example:"50"`
+// 分页包装结构体
+type PageRes[T any] struct {
+	List  []T   `json:"list"`               // 列表
+	Total int64 `json:"total" example:"50"` // 总数
+	Page  int   `json:"page" example:"1"`   // 当前页码
+	Size  int   `json:"size" example:"10"`  // 分页大小
 }
 
 // 响应为空时的结构体

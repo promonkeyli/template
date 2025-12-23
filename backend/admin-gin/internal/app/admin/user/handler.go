@@ -28,8 +28,18 @@ func mapServiceErrorCode(err error) int {
 	return http.StatusInternalServerError
 }
 
+// @Summary		获取用户列表
+// @Description	支持分页以及条件查询
+// @ID				listUser
+// @Security		BearerAuth
+// @Tags			User
+// @Accept			json
+// @Produce		json
+// @Param			query	query		listReq											true	"查询参数"
+// @Success		200		{object}	pkghttp.HttpResponse[pkghttp.PageRes[listRes]]	"查询成功"
+// @Router			/admin/user [get]
 func (h *Handler) List(c *gin.Context) {
-	var req ReadReq
+	var req listReq
 	if err := c.ShouldBindQuery(&req); err != nil {
 		pkghttp.Fail(c, http.StatusBadRequest, "参数错误")
 		return
@@ -41,7 +51,12 @@ func (h *Handler) List(c *gin.Context) {
 		return
 	}
 
-	pkghttp.OKWithPage(c, res, int64(total), req.GetPage(), req.GetPageSize())
+	pkghttp.OKWithPage(c, pkghttp.PageRes[listRes]{
+		List:  res,
+		Total: int64(total),
+		Page:  req.GetPage(),
+		Size:  req.GetPageSize(),
+	})
 }
 
 func (h *Handler) Create(c *gin.Context) {
