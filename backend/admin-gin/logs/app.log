@@ -266,3 +266,49 @@
 {"time":"2025-12-23T09:18:26.385775+08:00","level":"INFO","msg":"http request","method":"POST","path":"/admin/auth/login","status":200,"latency":120453375,"client_ip":"127.0.0.1","user_agent":"Apifox/1.0.0 (https://apifox.com)"}
 {"time":"2025-12-23T09:18:49.562031+08:00","level":"INFO","msg":"http request","method":"GET","path":"/admin/user","status":200,"latency":94083,"client_ip":"127.0.0.1","user_agent":"Apifox/1.0.0 (https://apifox.com)"}
 {"time":"2025-12-23T09:21:02.471373+08:00","level":"INFO","msg":"http request","method":"GET","path":"/admin/user","status":200,"latency":40304459,"client_ip":"127.0.0.1","user_agent":"Apifox/1.0.0 (https://apifox.com)"}
+{"time":"2025-12-23T16:13:02.285674+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
+{"time":"2025-12-23T16:13:02.287202+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)"}
+{"time":"2025-12-23T16:13:02.287223+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*handler).register-fm (4 handlers)"}
+{"time":"2025-12-23T16:13:02.287231+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*handler).login-fm (4 handlers)"}
+{"time":"2025-12-23T16:13:02.287246+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/session/refresh --> mall-api/internal/app/admin/iam/auth.(*handler).refresh-fm (4 handlers)"}
+{"time":"2025-12-23T16:13:02.287252+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/session/logout --> mall-api/internal/app/admin/iam/auth.(*handler).logout-fm (5 handlers)"}
+{"time":"2025-12-23T16:13:02.287258+08:00","level":"INFO","msg":"[GIN-debug] GET    /admin/user               --> mall-api/internal/app/admin/user.(*Handler).List-fm (5 handlers)"}
+{"time":"2025-12-23T16:13:14.709655+08:00","level":"INFO","msg":"http request","method":"GET","path":"/swagger/*any","status":200,"latency":419166,"client_ip":"127.0.0.1","user_agent":"node"}
+{"time":"2025-12-23T16:13:14.743582+08:00","level":"INFO","msg":"http request","method":"GET","path":"/swagger/*any","status":200,"latency":205167,"client_ip":"127.0.0.1","user_agent":"node"}
+{"time":"2025-12-23T16:15:23.841594+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
+{"time":"2025-12-23T16:15:23.842384+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)"}
+{"time":"2025-12-23T16:15:23.8425+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*handler).register-fm (4 handlers)"}
+{"time":"2025-12-23T16:15:23.842532+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*handler).login-fm (4 handlers)"}
+{"time":"2025-12-23T16:15:23.842552+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/session/refresh --> mall-api/internal/app/admin/iam/auth.(*handler).refresh-fm (4 handlers)"}
+{"time":"2025-12-23T16:15:23.842567+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/session/logout --> mall-api/internal/app/admin/iam/auth.(*handler).logout-fm (5 handlers)"}
+{"time":"2025-12-23T16:15:23.842584+08:00","level":"INFO","msg":"[GIN-debug] GET    /admin/user               --> mall-api/internal/app/admin/user.(*Handler).List-fm (5 handlers)"}
+{"time":"2025-12-23T16:15:31.571972+08:00","level":"INFO","msg":"http request","method":"GET","path":"/swagger/*any","status":200,"latency":898417,"client_ip":"127.0.0.1","user_agent":"node"}
+{"time":"2025-12-23T16:15:31.603623+08:00","level":"INFO","msg":"http request","method":"GET","path":"/swagger/*any","status":200,"latency":201500,"client_ip":"127.0.0.1","user_agent":"node"}
+{"time":"2025-12-23T16:15:52.276685+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
+{"time":"2025-12-23T16:15:52.277549+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)"}
+{"time":"2025-12-23T16:15:52.277685+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*handler).register-fm (4 handlers)"}
+{"time":"2025-12-23T16:15:52.277721+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*handler).login-fm (4 handlers)"}
+{"time":"2025-12-23T16:15:52.277746+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/session/refresh --> mall-api/internal/app/admin/iam/auth.(*handler).refresh-fm (4 handlers)"}
+{"time":"2025-12-23T16:15:52.277767+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/session/logout --> mall-api/internal/app/admin/iam/auth.(*handler).logout-fm (5 handlers)"}
+{"time":"2025-12-23T16:15:52.277792+08:00","level":"INFO","msg":"[GIN-debug] GET    /admin/user               --> mall-api/internal/app/admin/user.(*Handler).List-fm (5 handlers)"}
+{"time":"2025-12-23T16:16:02.953626+08:00","level":"INFO","msg":"http request","method":"GET","path":"/swagger/*any","status":200,"latency":748250,"client_ip":"127.0.0.1","user_agent":"node"}
+{"time":"2025-12-23T16:16:02.985615+08:00","level":"INFO","msg":"http request","method":"GET","path":"/swagger/*any","status":200,"latency":407292,"client_ip":"127.0.0.1","user_agent":"node"}
+{"time":"2025-12-23T16:16:23.435481+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
+{"time":"2025-12-23T16:16:23.436248+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)"}
+{"time":"2025-12-23T16:16:23.436362+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*handler).register-fm (4 handlers)"}
+{"time":"2025-12-23T16:16:23.436396+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*handler).login-fm (4 handlers)"}
+{"time":"2025-12-23T16:16:23.436419+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/session/refresh --> mall-api/internal/app/admin/iam/auth.(*handler).refresh-fm (4 handlers)"}
+{"time":"2025-12-23T16:16:23.436438+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/session/logout --> mall-api/internal/app/admin/iam/auth.(*handler).logout-fm (5 handlers)"}
+{"time":"2025-12-23T16:16:23.436456+08:00","level":"INFO","msg":"[GIN-debug] GET    /admin/user               --> mall-api/internal/app/admin/user.(*Handler).List-fm (5 handlers)"}
+{"time":"2025-12-23T16:16:30.270064+08:00","level":"INFO","msg":"http request","method":"GET","path":"/swagger/*any","status":200,"latency":949416,"client_ip":"127.0.0.1","user_agent":"node"}
+{"time":"2025-12-23T16:16:30.301099+08:00","level":"INFO","msg":"http request","method":"GET","path":"/swagger/*any","status":200,"latency":109042,"client_ip":"127.0.0.1","user_agent":"node"}
+{"time":"2025-12-23T16:17:47.55835+08:00","level":"INFO","msg":"http request","method":"GET","path":"/swagger/*any","status":200,"latency":629750,"client_ip":"127.0.0.1","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+{"time":"2025-12-23T16:20:41.809316+08:00","level":"INFO","msg":"[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)"}
+{"time":"2025-12-23T16:20:41.809937+08:00","level":"INFO","msg":"[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)"}
+{"time":"2025-12-23T16:20:41.809997+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/register      --> mall-api/internal/app/admin/iam/auth.(*handler).register-fm (4 handlers)"}
+{"time":"2025-12-23T16:20:41.81001+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/login         --> mall-api/internal/app/admin/iam/auth.(*handler).login-fm (4 handlers)"}
+{"time":"2025-12-23T16:20:41.810019+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/session/refresh --> mall-api/internal/app/admin/iam/auth.(*handler).refresh-fm (4 handlers)"}
+{"time":"2025-12-23T16:20:41.810026+08:00","level":"INFO","msg":"[GIN-debug] POST   /admin/auth/session/logout --> mall-api/internal/app/admin/iam/auth.(*handler).logout-fm (5 handlers)"}
+{"time":"2025-12-23T16:20:41.810034+08:00","level":"INFO","msg":"[GIN-debug] GET    /admin/user               --> mall-api/internal/app/admin/user.(*Handler).List-fm (5 handlers)"}
+{"time":"2025-12-23T16:21:16.95557+08:00","level":"INFO","msg":"http request","method":"GET","path":"/swagger/*any","status":200,"latency":4650167,"client_ip":"127.0.0.1","user_agent":"node"}
+{"time":"2025-12-23T16:21:16.986671+08:00","level":"INFO","msg":"http request","method":"GET","path":"/swagger/*any","status":200,"latency":261916,"client_ip":"127.0.0.1","user_agent":"node"}

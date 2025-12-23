@@ -3,20 +3,20 @@ import { createAxiosFactory } from "@/services/core/factory";
 import { useAuthStore } from "@/stores/auth";
 import { refreshToken } from "@/services/api/auth/auth";
 
-// 1. 规范环境变量读取 (Vite 标准)
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+declare const process: { env: Record<string, string> };
 
-// 2. 定义业务状态码 (根据你后端的实际定义修改)
+
+// 1. 定义业务状态码 (根据你后端的实际定义修改)
 const ResultEnum = {
 	SUCCESS: 200,
 	EXPIRE: 401, // Token 过期
 	ERROR: 500,
 };
 
-// 3. 定义白名单
+// 2. 定义白名单
 const WHITE_LIST = ["/admin/auth/login"];
 
-// 4. 并发控制变量
+// 3. 并发控制变量
 let isRefreshing = false;
 let requestsQueue: Array<(token: string) => void> = [];
 
@@ -24,7 +24,7 @@ let requestsQueue: Array<(token: string) => void> = [];
  * @description 主业务 Axios 实例
  */
 export const httpInstance = createAxiosFactory({
-	baseURL: BASE_URL,
+	baseURL: process.env.VITE_API_BASE_URL,
 	interceptors: {
 		// ---------------- 请求拦截器 ----------------
 		request: (config) => {
@@ -80,7 +80,9 @@ export const httpInstance = createAxiosFactory({
 						useAuthStore.getState().setToken(newTokenData);
 
 						// 唤醒队列中的请求
-						requestsQueue.forEach((cb) => cb(newTokenData.access_token));
+						requestsQueue.forEach((cb) => {
+              cb(newTokenData.access_token)
+            });
 						requestsQueue = [];
 
 						// 重试当前请求

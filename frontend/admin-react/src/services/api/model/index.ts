@@ -12,3 +12,7 @@ export * from "./authRegisterReq";
 export * from "./httpEmpty";
 export * from "./httpHttpResponseAuthLoginRes";
 export * from "./httpHttpResponseEmpty";
+export * from "./httpHttpResponseHttpPageResUserListRes";
+export * from "./httpPageResUserListRes";
+export * from "./listUserParams";
+export * from "./userListRes";

@@ -35,8 +35,9 @@ func mapServiceErrorCode(err error) int {
 // @Tags			User
 // @Accept			json
 // @Produce		json
-// @Param			query	query		listReq											true	"查询参数"
+// @Param			params	query		listReq											true	"查询参数"
 // @Success		200		{object}	pkghttp.HttpResponse[pkghttp.PageRes[listRes]]	"查询成功"
+// @Router			/admin/user [get]
 // @Router			/admin/user [get]
 func (h *Handler) List(c *gin.Context) {
 	var req listReq
