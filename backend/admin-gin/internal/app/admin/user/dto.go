@@ -12,10 +12,10 @@ type listReq struct {
 	http.HttpPageRequest
 
 	// 角色：枚举
-	Role string `form:"role"`
+	Role string `form:"role" binding:"omitempty"`
 
 	// 关键字：多字段综合搜索， email/username/uid
-	Keyword string `form:"keyword"`
+	Keyword string `form:"keyword" binding:"omitempty"`
 }
 
 // 【获取用户列表】响应体
